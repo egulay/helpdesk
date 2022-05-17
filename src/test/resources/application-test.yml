@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+  cloud:
+    discovery:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false

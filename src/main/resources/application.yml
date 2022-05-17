@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/help_desk
+    username: dev_user
+    password: 111
+  jpa:
+    hibernate.ddl-auto: update
+    generate-ddl: true
+    show-sql: true
+  main:
+    banner-mode: console
+  cloud:
+    config:
+      enabled: false # change it to true if you have Eureka server running somewhere ;)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+server:
+  port: 8888 # rest port (in our case grpc over rest)
+  error:
+    include-message: always
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${random.uuid}
+  client:
+    register-with-eureka: false # change it to true if you have Eureka server running somewhere ;)
+    service-url:
+      defaultZone: http://${eureka.host:localhost}:${eureka.port:8761}/eureka/ #Specify the registry URL, so this client will know where to look up the required service.
+    healthcheck:
+      enabled: true
+    enabled: false # change it to true if you have Eureka server running somewhere ;)
+    fetch-registry: false # change it to true if you have Eureka server running somewhere ;)
+

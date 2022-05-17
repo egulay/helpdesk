@@ -1,0 +1,20 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option cc_generic_services = true;
+option java_generic_services = true;
+package com.helpdesk;
+
+import "Common.proto";
+
+message IssueRequest {
+  int32 id = 1;
+  int32 requesterId = 2;
+  string body = 3;
+  bool isSolved = 4;
+  NullableInt64 created = 5;
+  NullableInt64 solved = 6;
+}
+
+message IssueRequests {
+  repeated IssueRequest issueRequests = 1;
+}
