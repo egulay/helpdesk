@@ -79,7 +79,7 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                 .email("new@email.net")
                 .build());
 
-        assertEquals(newIssueRequester1.getId(),updated.getId());
+        assertEquals(newIssueRequester1.getId(), updated.getId());
         assertNotEquals(newIssueRequester1.getFullName(), updated.getFullName());
         assertNotEquals(newIssueRequester1.getEmail(), updated.getEmail());
     }

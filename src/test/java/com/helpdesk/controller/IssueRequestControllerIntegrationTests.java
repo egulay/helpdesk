@@ -367,7 +367,7 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
 
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
-        assertEquals(String.valueOf(response.getBody().getId()), (newIssueRequest1.getId().toString()));
+        assertEquals(String.valueOf(response.getBody().getId()), newIssueRequest1.getId().toString());
 
         try {
             issueRequesterService.findById(response.getBody().getId());
@@ -406,7 +406,7 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
     }
 
     @Test
-    public void insert_issue_request__with_exception_test() {
+    public void insert_issue_request_with_exception_test() {
         insertNewIssueRequester();
 
         val issueRequestToPost = IssueRequest

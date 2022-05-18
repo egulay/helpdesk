@@ -172,7 +172,7 @@ public class IssueResponseController {
         return ResponseEntity.ok(mapPaged(result));
     }
 
-    @RequestMapping(value = "/v1/issue_respones/delete/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/v1/issue_responses/delete/{id}", method = RequestMethod.DELETE)
     private ResponseEntity<IssueResponse> deleteIssueResponseV1(@PathVariable String id) {
         log.info("Calling: deleteIssueResponseV1 >> ".concat(id));
 
@@ -182,7 +182,7 @@ public class IssueResponseController {
     }
 
 
-    @RequestMapping(value = "/v1/issue_respones/save", method = RequestMethod.POST)
+    @RequestMapping(value = "/v1/issue_responses/save", method = RequestMethod.POST)
     private ResponseEntity<IssueResponse> saveIssueResponseV1(@RequestBody IssueResponse issueResponse) {
         log.info("Calling: saveIssueResponseV1 >> ".concat(issueResponse.toString()));
 

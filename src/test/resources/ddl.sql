@@ -1,7 +1,9 @@
-CREATE DATABASE IF NOT EXISTS help_desk
+CREATE
+DATABASE IF NOT EXISTS help_desk
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_0900_ai_ci;
-USE help_desk;
+USE
+help_desk;
 
 DROP TABLE IF EXISTS issue_response;
 DROP TABLE IF EXISTS issue_request;
@@ -18,15 +20,13 @@ CREATE TABLE issue_requester
 
 CREATE TABLE issue_request
 (
-    id           INT      NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    requester_id INT      NOT NULL,
-    request_body TEXT     NOT NULL,
+    id           INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    requester_id INT  NOT NULL,
+    request_body TEXT NOT NULL,
     is_solved    BOOLEAN  DEFAULT FALSE,
     created      DATETIME DEFAULT CURRENT_TIMESTAMP,
     solved       DATETIME NULL,
-    FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+    FOREIGN KEY (requester_id) REFERENCES issue_requester (id) ON DELETE CASCADE
 );
 
 CREATE TABLE issue_response
@@ -39,7 +39,5 @@ CREATE TABLE issue_response
     FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    FOREIGN KEY (request_id) REFERENCES issue_request (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+    FOREIGN KEY (request_id) REFERENCES issue_request (id) ON DELETE CASCADE
 );
