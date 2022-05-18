@@ -3,7 +3,7 @@ package com.helpdesk;
 import com.helpdesk.data.service.IssueRequestService;
 import com.helpdesk.data.service.IssueRequesterService;
 import com.helpdesk.data.service.IssueResponseService;
-import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,16 +17,15 @@ import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-//@SuppressWarnings("rawtypes")
+@SuppressWarnings("rawtypes")
 @DirtiesContext
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = HelpdeskApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Testcontainers
-public class TestBase {
-    private static final MySQLContainer<?> container;
+@Ignore
+public abstract class TestBase {
+    private static final MySQLContainer container;
     private static final String IMAGE_VERSION = "mysql:8.0";
 
     @LocalServerPort
@@ -58,10 +57,5 @@ public class TestBase {
         dynamicPropertyRegistry.add("spring.datasource.url", container::getJdbcUrl);
         dynamicPropertyRegistry.add("spring.datasource.username", container::getUsername);
         dynamicPropertyRegistry.add("spring.datasource.password", container::getPassword);
-    }
-
-    @Test
-    public void is_container_created_test() {
-        assertTrue(container.isCreated());
     }
 }
