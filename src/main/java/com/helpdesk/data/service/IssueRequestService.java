@@ -1,6 +1,7 @@
 package com.helpdesk.data.service;
 
 import com.helpdesk.data.model.IssueRequestModel;
+import com.helpdesk.data.model.IssueResponseModel;
 import com.helpdesk.data.repository.IssueRequestRepository;
 import com.helpdesk.data.util.GenericPagedModel;
 import com.helpdesk.data.validator.IssueRequestValidator;
@@ -38,6 +39,28 @@ public class IssueRequestService {
 
     public IssueRequestModel findById(Integer id, boolean isSolved) {
         return getRequest(id, isSolved);
+    }
+
+    public GenericPagedModel<IssueRequestModel> findAll(int page, int size,
+                                                         String sortBy, SortDirection sortDirection) {
+        try {
+            val requesters = sortDirection.equals(SortDirection.Ascending)
+                    ? issueRequestRepository.findAll(PageRequest.of(page, size, Sort.by(sortBy).ascending()))
+                    : issueRequestRepository.findAll(PageRequest.of(page, size, Sort.by(sortBy).descending()));
+            if (requesters.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No data");
+            }
+
+            return GenericPagedModel.<IssueRequestModel>builder()
+                    .totalElements(requesters.getTotalElements())
+                    .numberOfElements(requesters.getNumberOfElements())
+                    .totalPages(requesters.getTotalPages())
+                    .content(requesters.getContent())
+                    .build();
+
+        } catch (final DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        }
     }
 
     public GenericPagedModel<IssueRequestModel> findAllByCreatedBeforeAndCreatedAfter(Date createdBefore,

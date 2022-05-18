@@ -98,13 +98,23 @@ public class IssueRequestController {
             String sortBy,
             @RequestParam(defaultValue = "desc")
             String sortDir) {
-        log.info("Calling: getAllIssueRequestsByCreatedBeforeAndCreatedAfter >> Created Before: ".concat(createdBefore)
-                .concat(" | Created After: ").concat(createdAfter));
+
+        if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
+            log.info("Calling: getAllIssueRequestsByCreatedBeforeAndCreatedAfter >> Created Before: ".concat(createdBefore)
+                    .concat(" | Created After: ").concat(createdAfter));
+
+            val result = issueRequestService
+                    .findAllByCreatedBeforeAndCreatedAfter(new Date(getLong(createdBefore, "createdBefore")),
+                            new Date(getLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+
+            return ResponseEntity.ok(mapPaged(result));
+        }
+
+        log.info("Calling: getAllIssueRequestsByCreatedBeforeAndCreatedAfter");
 
         val result = issueRequestService
-                .findAllByCreatedBeforeAndCreatedAfter(new Date(getLong(createdBefore, "createdBefore")),
-                        new Date(getLong(createdAfter, "createdAfter")),
-                        pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                .findAll(pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }

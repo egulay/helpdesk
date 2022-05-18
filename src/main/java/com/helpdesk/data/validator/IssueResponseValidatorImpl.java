@@ -12,12 +12,7 @@ public class IssueResponseValidatorImpl implements IssueResponseValidator {
     @Override
     public void validate(IssueResponseModel model) {
         notNull.test(model.getRequest().getId()).throwIfInvalid(REQUEST_ID_FIELD_FOR_VALIDATION);
-        notNull.test(model.getRequest().getRequester().getId()).throwIfInvalid(REQUESTER_ID_FIELD_FOR_VALIDATION);
         notNull.test(model.getRequester().getId()).throwIfInvalid(REQUESTER_ID_FIELD_FOR_VALIDATION);
         notBlank.test(model.getBody()).throwIfInvalid(RESPONSE_BODY_FIELD_FOR_VALIDATION);
-
-        notNull.test(model.getRequester().getId().toString()).throwIfInvalid(REQUESTER_ID_FIELD_FOR_VALIDATION);
-        notNull.test(model.getRequest().getRequester().getId().toString())
-                .throwIfInvalid(REQUESTER_ID_FIELD_FOR_VALIDATION);
     }
 }

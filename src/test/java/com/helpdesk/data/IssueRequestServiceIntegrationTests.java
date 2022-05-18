@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -26,7 +27,7 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
         newIssueRequester = issueRequesterService.save(IssueRequesterModel
                 .builder()
                 .fullName("test1_full_name")
-                .email("test1@email.com")
+                .email(UUID.randomUUID().toString().concat("@email.com"))
                 .build());
     }
 
@@ -134,6 +135,20 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
     }
 
     @Test
+    public void find_all_issue_requests_test() {
+        insertNewIssueRequester();
+        insertNewIssueRequest1();
+        insertNewIssueRequest2();
+
+        testCollection(issueRequestService.findAll(0, 10, "created", SortDirection.Descending));
+    }
+
+    @Test(expected = ResponseStatusException.class)
+    public void find_all_issue_responses_with_exception_test() {
+        testCollection(issueRequestService.findAll(0, 10, "created", SortDirection.Descending));
+    }
+
+    @Test
     public void find_all_issue_request_by_created_before_and_created_after_test() {
         insertNewIssueRequester();
         insertNewIssueRequest1();
@@ -169,8 +184,8 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
         val found1 = issueRequestService.findById(newIssueRequest1.getId());
         val found2 = issueRequestService.findById(newIssueRequest2.getId());
 
-        assertEquals(true, found1.getIsSolved());
-        assertEquals(true, found2.getIsSolved());
+        assertTrue(found1.getIsSolved());
+        assertTrue(found2.getIsSolved());
 
         assertNotNull(found1.getSolved());
         assertNotNull(found2.getSolved());
@@ -205,8 +220,8 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
         val found1 = issueRequestService.findById(newIssueRequest1.getId());
         val found2 = issueRequestService.findById(newIssueRequest2.getId());
 
-        assertEquals(true, found1.getIsSolved());
-        assertEquals(true, found2.getIsSolved());
+        assertTrue(found1.getIsSolved());
+        assertTrue(found2.getIsSolved());
 
         assertNotNull(found1.getSolved());
         assertNotNull(found2.getSolved());
@@ -287,8 +302,8 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
         val found1 = issueRequestService.findById(newIssueRequest1.getId());
         val found2 = issueRequestService.findById(newIssueRequest2.getId());
 
-        assertEquals(true, found1.getIsSolved());
-        assertEquals(true, found2.getIsSolved());
+        assertTrue(found1.getIsSolved());
+        assertTrue(found2.getIsSolved());
 
         assertNotNull(found1.getSolved());
         assertNotNull(found2.getSolved());
