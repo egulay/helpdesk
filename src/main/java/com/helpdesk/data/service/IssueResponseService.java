@@ -210,16 +210,6 @@ public class IssueResponseService {
         try {
             issueResponseValidator.validate(model);
 
-            if (!issueResponseRepository.existsByRequesterId(model.getRequester().getId())) {
-                throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
-                        "requesterId:".concat(model.getRequester().getId().toString()));
-            }
-
-            if (!issueResponseRepository.existsByRequestId(model.getRequest().getId())) {
-                throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
-                        "requestId:".concat(model.getRequest().getId().toString()));
-            }
-
             return issueResponseRepository.save(model);
 
         } catch (final DataIntegrityViolationException ex) {

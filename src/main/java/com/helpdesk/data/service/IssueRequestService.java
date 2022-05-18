@@ -206,10 +206,6 @@ public class IssueRequestService {
         try {
             issueRequestValidator.validate(model);
 
-            if (!issueRequestRepository.existsByRequesterId(model.getRequester().getId())) {
-                throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
-                        "requesterId:".concat(model.getRequester().getId().toString()));
-            }
             return issueRequestRepository.save(model);
 
         } catch (final DataIntegrityViolationException ex) {
