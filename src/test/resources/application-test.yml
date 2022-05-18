@@ -11,3 +11,9 @@ eureka:
   client:
     enabled: false
     register-with-eureka: false
+
+
+logging:
+  level:
+    org:
+      springframework: OFF

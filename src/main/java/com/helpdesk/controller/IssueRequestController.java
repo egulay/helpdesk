@@ -227,7 +227,7 @@ public class IssueRequestController {
                 .setId(model.getId())
                 .setRequesterId(model.getRequester().getId())
                 .setBody(model.getBody())
-                .setIsSolved(Objects.nonNull(model.getCreated())
+                .setIsSolved(Objects.nonNull(model.getIsSolved())
                         ? NullableBoolean.newBuilder().setData(model.getIsSolved()).build()
                         : NullableBoolean.newBuilder().setNull(NullValue.NULL_VALUE).build())
                 .setCreated(Objects.nonNull(model.getCreated())
