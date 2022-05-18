@@ -30,7 +30,7 @@ public class IssueRequesterModel {
 
     private String email;
 
-    @Column(name = "is_active", insertable = false)
+    @Column(name = "is_active", insertable = false, columnDefinition = "boolean default true")
     @Generated(GenerationTime.INSERT)
     private Boolean isActive;
 
