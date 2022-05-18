@@ -1,10 +1,7 @@
 package com.helpdesk.controller;
 
 import com.google.protobuf.NullValue;
-import com.helpdesk.IssueRequester;
-import com.helpdesk.IssueRequesters;
-import com.helpdesk.NullableInt64;
-import com.helpdesk.PagedData;
+import com.helpdesk.*;
 import com.helpdesk.data.model.IssueRequesterModel;
 import com.helpdesk.data.service.IssueRequesterService;
 import com.helpdesk.data.util.GenericPagedModel;
@@ -196,7 +193,7 @@ public class IssueRequesterController {
 
         val saved = issueRequesterService.save(IssueRequesterModel
                 .builder()
-                .id(issueRequester.getId())
+                .id(getInteger(String.valueOf(issueRequester.getId()),"id"))
                 .fullName(issueRequester.getFullName())
                 .email(issueRequester.getEmail())
                 .build());
@@ -227,7 +224,9 @@ public class IssueRequesterController {
                 .setId(model.getId())
                 .setFullName(model.getFullName())
                 .setEmail(model.getEmail())
-                .setIsActive(model.getIsActive())
+                .setIsActive(Objects.nonNull(model.getCreated())
+                        ? NullableBoolean.newBuilder().setData(model.getIsActive()).build()
+                        : NullableBoolean.newBuilder().setNull(NullValue.NULL_VALUE).build())
                 .setCreated(Objects.nonNull(model.getCreated())
                         ? NullableInt64.newBuilder().setData(model.getCreated()
                         .toInstant().toEpochMilli()).build()

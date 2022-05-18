@@ -1,10 +1,7 @@
 package com.helpdesk.controller;
 
 import com.google.protobuf.NullValue;
-import com.helpdesk.IssueRequest;
-import com.helpdesk.IssueRequests;
-import com.helpdesk.NullableInt64;
-import com.helpdesk.PagedData;
+import com.helpdesk.*;
 import com.helpdesk.data.model.IssueRequestModel;
 import com.helpdesk.data.service.IssueRequestService;
 import com.helpdesk.data.service.IssueRequesterService;
@@ -230,7 +227,9 @@ public class IssueRequestController {
                 .setId(model.getId())
                 .setRequesterId(model.getRequester().getId())
                 .setBody(model.getBody())
-                .setIsSolved(model.getIsSolved())
+                .setIsSolved(Objects.nonNull(model.getCreated())
+                        ? NullableBoolean.newBuilder().setData(model.getIsSolved()).build()
+                        : NullableBoolean.newBuilder().setNull(NullValue.NULL_VALUE).build())
                 .setCreated(Objects.nonNull(model.getCreated())
                         ? NullableInt64.newBuilder().setData(model.getCreated()
                         .toInstant().toEpochMilli()).build()

@@ -10,7 +10,7 @@ message IssueRequest {
   int32 id = 1;
   int32 requesterId = 2;
   string body = 3;
-  bool isSolved = 4;
+  NullableBoolean isSolved = 4;
   NullableInt64 created = 5;
   NullableInt64 solved = 6;
 }

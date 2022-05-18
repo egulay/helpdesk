@@ -10,7 +10,7 @@ message IssueRequester {
   int32 id = 1;
   string fullName = 2;
   string email = 3;
-  bool isActive = 4;
+  NullableBoolean isActive = 4;
   NullableInt64 created = 5;
 }
 
