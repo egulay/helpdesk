@@ -1,7 +1,6 @@
 package com.helpdesk.data.service;
 
 import com.helpdesk.data.model.IssueRequestModel;
-import com.helpdesk.data.model.IssueResponseModel;
 import com.helpdesk.data.repository.IssueRequestRepository;
 import com.helpdesk.data.util.GenericPagedModel;
 import com.helpdesk.data.validator.IssueRequestValidator;
@@ -20,7 +19,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-// TODO: ADD IS SOLVED AS SEPARATE METHOD BOTH HERE AND IN REPO!
 @Service
 public class IssueRequestService {
     final IssueRequestRepository issueRequestRepository;
@@ -42,7 +40,7 @@ public class IssueRequestService {
     }
 
     public GenericPagedModel<IssueRequestModel> findAll(int page, int size,
-                                                         String sortBy, SortDirection sortDirection) {
+                                                        String sortBy, SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequestRepository.findAll(PageRequest.of(page, size, Sort.by(sortBy).ascending()))

@@ -161,7 +161,7 @@ public class IssueRequesterService {
                         "email:".concat(email)
                                 .concat(",createdBefore:")
                                 .concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
-                                .concat(",createdAfter")
+                                .concat(",createdAfter:")
                                 .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
             }
 
@@ -193,7 +193,7 @@ public class IssueRequesterService {
                         "isActive:".concat(String.valueOf(isActive))
                                 .concat(",createdBefore:")
                                 .concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
-                                .concat(",createdAfter")
+                                .concat(",createdAfter:")
                                 .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
             }
 
