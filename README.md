@@ -8,7 +8,7 @@
 ### Installation & Execution
 Standard build requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests.
 
-#### Maven - Clean Build included integration test executions
+#### Maven - Clean build included integration test executions
 ```sh
    mvn clean install
 ```
