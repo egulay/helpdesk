@@ -1,6 +1,8 @@
 # Dummy Helpdesk API
 
 ### Used Technologies at a Glance
+* [Java 11](https://openjdk.java.net/projects/jdk/11/)
+* [Maven](https://maven.apache.org/)
 * [Spring Cloud](https://spring.io/projects/spring-cloud)
 * [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
 * [MySQL](https://www.mysql.com/)
@@ -14,7 +16,7 @@
 
 ### Installation & Execution
 Standard build requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
-#### Following [Docker](https://www.docker.com/products/docker-desktop/) images are going to be required:
+#### Base [Docker](https://www.docker.com/products/docker-desktop/) Images 
 * #### Testcontainers version 0.3.3
 ```sh
    docker pull testcontainers/ryuk:0.3.3
@@ -23,11 +25,11 @@ Standard build requires up-to-date [Docker](https://www.docker.com/products/dock
 ```sh
    docker pull mysql:8.0
 ```
-#### Maven - Clean build included integration test executions
+#### Maven - Clean Build (Should be executed after first pull)
 ```sh
    mvn clean install
 ```
-#### Maven - Class generation from proto files
+#### Maven - Class Generation From Proto Files
 ```sh
    mvn protobuf:compile
 ```
