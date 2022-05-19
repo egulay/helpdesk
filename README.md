@@ -16,7 +16,7 @@
 
 ### Installation & Execution
 Standard build requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
-#### Base [Docker](https://www.docker.com/products/docker-desktop/) Images 
+#### Base [Docker](https://www.docker.com/products/docker-desktop/) Images for Integration Tests
 * #### Testcontainers version 0.3.3
 ```sh
    docker pull testcontainers/ryuk:0.3.3
@@ -25,7 +25,7 @@ Standard build requires up-to-date [Docker](https://www.docker.com/products/dock
 ```sh
    docker pull mysql:8.0
 ```
-#### Maven - Clean Build (Should be executed after first pull)
+#### Maven - Clean Build (Should be executed after first pull for class generation from *.proto files)
 ```sh
    mvn clean install
 ```
