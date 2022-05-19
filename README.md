@@ -1,18 +1,28 @@
 # Dummy Helpdesk API
 
-### Used Technologies
+### Used Technologies at a Glance
 * [Spring Cloud](https://spring.io/projects/spring-cloud)
 * [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
+* [MySQL](https://www.mysql.com/)
 * [Hibernate ORM](https://hibernate.org/orm/)
 * [Apache Commons Lang](https://commons.apache.org/proper/commons-lang/)
 * [Google Protocol Buffers](https://developers.google.com/protocol-buffers/)
 * [Maven Protocol Buffers Plugin](https://www.xolstice.org/protobuf-maven-plugin/)
 * [JUnit](https://junit.org/junit5/)
-* [Test Containers (MySQL)](https://www.testcontainers.org/modules/databases/)
+* [Test Containers](https://www.testcontainers.org/modules/databases/)
 * [Lombok](https://projectlombok.org/)
 
 ### Installation & Execution
 Standard build requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
+#### Following [Docker](https://www.docker.com/products/docker-desktop/) images are going to be required:
+* Testcontainers version 0.3.3
+```sh
+   docker pull testcontainers/ryuk:0.3.3
+```
+* MySQL version 8.0
+```sh
+   docker pull mysql:8.0
+```
 #### Maven - Clean build included integration test executions
 ```sh
    mvn clean install
