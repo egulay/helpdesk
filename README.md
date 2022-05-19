@@ -11,7 +11,7 @@
 * [Google Protocol Buffers](https://developers.google.com/protocol-buffers/)
 * [Maven Protocol Buffers Plugin](https://www.xolstice.org/protobuf-maven-plugin/)
 * [JUnit](https://junit.org/junit5/)
-* [Test Containers](https://www.testcontainers.org/modules/databases/)
+* [Testcontainers](https://www.testcontainers.org/modules/databases/)
 * [Lombok](https://projectlombok.org/)
 
 ### Installation & Execution
