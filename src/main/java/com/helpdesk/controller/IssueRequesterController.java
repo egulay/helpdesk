@@ -224,7 +224,7 @@ public class IssueRequesterController {
                 .setId(model.getId())
                 .setFullName(model.getFullName())
                 .setEmail(model.getEmail())
-                .setIsActive(Objects.nonNull(model.getCreated())
+                .setIsActive(Objects.nonNull(model.getIsActive())
                         ? NullableBoolean.newBuilder().setData(model.getIsActive()).build()
                         : NullableBoolean.newBuilder().setNull(NullValue.NULL_VALUE).build())
                 .setCreated(Objects.nonNull(model.getCreated())
