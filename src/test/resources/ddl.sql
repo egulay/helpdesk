@@ -1,5 +1,8 @@
+DROP
+DATABASE IF EXISTS help_desk;
+
 CREATE
-DATABASE IF NOT EXISTS help_desk
+DATABASE help_desk
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_0900_ai_ci;
 USE

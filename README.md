@@ -1,6 +1,6 @@
 # Dummy Helpdesk API
 
-### Used Technologies at a Glance
+## Used Technologies at a Glance
 * [Java 11](https://openjdk.java.net/projects/jdk/11/)
 * [Maven](https://maven.apache.org/)
 * [Spring Cloud](https://spring.io/projects/spring-cloud)
@@ -14,9 +14,9 @@
 * [Testcontainers](https://www.testcontainers.org/modules/databases/)
 * [Lombok](https://projectlombok.org/)
 
-### Installation & Execution
-Standard build requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
-#### Base [Docker](https://www.docker.com/products/docker-desktop/) Images for Integration Tests
+## Installation & Execution
+The solution requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
+### Base [Docker](https://www.docker.com/products/docker-desktop/) Images for Integration Tests
 * #### Testcontainers version 0.3.3
 ```sh
    docker pull testcontainers/ryuk:0.3.3
@@ -25,13 +25,82 @@ Standard build requires up-to-date [Docker](https://www.docker.com/products/dock
 ```sh
    docker pull mysql:8.0
 ```
-#### Maven - Clean Build (Should be executed after first pull for class generation from *.proto files)
+### Building the Project
 ```sh
    mvn clean install
 ```
-#### Maven - Class Generation From Proto Files
+Above command creates Java source files located in proto directory, execute tests and compile the solution.
+#### MySQL - DDL Script
+```mysql
+DROP
+    DATABASE IF EXISTS help_desk;
+
+CREATE
+    DATABASE help_desk
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_0900_ai_ci;
+USE
+    help_desk;
+
+CREATE TABLE issue_requester
+(
+    id        INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(255) NOT NULL,
+    email     VARCHAR(255) NOT NULL,
+    is_active BOOLEAN  DEFAULT TRUE,
+    created   DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE issue_request
+(
+    id           INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    requester_id INT  NOT NULL,
+    request_body TEXT NOT NULL,
+    is_solved    BOOLEAN  DEFAULT FALSE,
+    created      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    solved       DATETIME NULL,
+    FOREIGN KEY (requester_id) REFERENCES issue_requester (id) ON DELETE CASCADE
+);
+
+CREATE TABLE issue_response
+(
+    id            INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    request_id    INT  NOT NULL,
+    requester_id  INT  NOT NULL,
+    response_body TEXT NOT NULL,
+    created       DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (request_id) REFERENCES issue_request (id) ON DELETE CASCADE
+);
+```
+#### MySQL - Create Developer User Script
+```mysql
+CREATE USER 'dev_user'@'localhost' IDENTIFIED BY '111';
+GRANT ALL PRIVILEGES ON *.* TO 'dev_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+#### MySQL - Seed Test Data Script
+```mysql
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE issue_response;
+TRUNCATE TABLE issue_request;
+TRUNCATE TABLE issue_requester;
+SET FOREIGN_KEY_CHECKS = 1;
+
+INSERT INTO issue_requester (full_name, email)
+VALUES ('Ludwig van Beethoven', 'ludwig@beethoven.net');
+
+INSERT INTO issue_request (requester_id, request_body)
+VALUES (1, 'Elise is not loving me anymore..!');
+
+INSERT INTO issue_response (request_id, requester_id, response_body)
+VALUES (1, 1, 'It is OK... I am not loving her anymore either :P');
+```
+### Starting the API
 ```sh
-   mvn protobuf:compile
+   java -jar target/helpdesk-0.0.1-SNAPSHOT.jar
 ```
 ### Example API Calls
 #### JSON (HTTP1)
