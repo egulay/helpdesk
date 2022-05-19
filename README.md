@@ -15,11 +15,11 @@
 ### Installation & Execution
 Standard build requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
 #### Following [Docker](https://www.docker.com/products/docker-desktop/) images are going to be required:
-* Testcontainers version 0.3.3
+* #### Testcontainers version 0.3.3
 ```sh
    docker pull testcontainers/ryuk:0.3.3
 ```
-* MySQL version 8.0
+* #### MySQL version 8.0
 ```sh
    docker pull mysql:8.0
 ```
