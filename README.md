@@ -29,8 +29,15 @@ The solution requires up-to-date [Docker](https://www.docker.com/products/docker
 ```sh
    mvn clean install
 ```
-Above command creates Java source files located in proto directory, execute tests and compile the solution.
-#### MySQL - DDL Script
+* Above command creates Java source files located in proto directory, execute tests and compile the solution.
+#### Create Developer User T-SQL Script
+```mysql
+CREATE USER 'dev_user'@'localhost' IDENTIFIED BY '111';
+GRANT ALL PRIVILEGES ON *.* TO 'dev_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+* The user info defined in above T-SQL also defined in [application.yml](https://github.com/egulay/helpdesk/blob/master/src/main/resources/application.yml).
+#### DDL Script
 ```mysql
 DROP
     DATABASE IF EXISTS help_desk;
@@ -75,13 +82,7 @@ CREATE TABLE issue_response
     FOREIGN KEY (request_id) REFERENCES issue_request (id) ON DELETE CASCADE
 );
 ```
-#### MySQL - Create Developer User Script
-```mysql
-CREATE USER 'dev_user'@'localhost' IDENTIFIED BY '111';
-GRANT ALL PRIVILEGES ON *.* TO 'dev_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-#### MySQL - Seed Test Data Script
+#### Seed Test Data T-SQL Script
 ```mysql
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE issue_response;
