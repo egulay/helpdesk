@@ -2,8 +2,12 @@
 
 ### Used Technologies
 * [Spring Cloud](https://spring.io/projects/spring-cloud)
+* [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
+* [Hibernate ORM](https://hibernate.org/orm/)
+* [Apache Commons Lang](https://commons.apache.org/proper/commons-lang/)
 * [Google Protocol Buffers](https://developers.google.com/protocol-buffers/)
 * [Maven Protocol Buffers Plugin](https://www.xolstice.org/protobuf-maven-plugin/)
+* [JUnit](https://junit.org/junit5/)
 * [Test Containers (MySQL)](https://www.testcontainers.org/modules/databases/)
 * [Lombok](https://projectlombok.org/)
 
