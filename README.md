@@ -3,11 +3,11 @@
 ### Used Technologies
 * [Spring Cloud](https://spring.io/projects/spring-cloud)
 * [Google Protocol Buffers](https://developers.google.com/protocol-buffers/)
+* [Maven Protocol Buffers Plugin](https://www.xolstice.org/protobuf-maven-plugin/)
 * [Test Containers (MySQL)](https://www.testcontainers.org/modules/databases/)
 
 ### Installation & Execution
-Standard build requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests.
-
+Standard build requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
 #### Maven - Clean build included integration test executions
 ```sh
    mvn clean install
