@@ -29,7 +29,8 @@ CREATE TABLE issue_request
     is_solved    BOOLEAN  DEFAULT FALSE,
     created      DATETIME DEFAULT CURRENT_TIMESTAMP,
     solved       DATETIME NULL,
-    FOREIGN KEY (requester_id) REFERENCES issue_requester (id) ON DELETE CASCADE
+    FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE issue_response
@@ -40,7 +41,7 @@ CREATE TABLE issue_response
     response_body TEXT NOT NULL,
     created       DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
+        ON DELETE CASCADE,
+    FOREIGN KEY (request_id) REFERENCES issue_request (id)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    FOREIGN KEY (request_id) REFERENCES issue_request (id) ON DELETE CASCADE
 );
