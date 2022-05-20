@@ -49,6 +49,10 @@ CREATE
 USE
     help_desk;
 
+DROP TABLE IF EXISTS issue_response;
+DROP TABLE IF EXISTS issue_request;
+DROP TABLE IF EXISTS issue_requester;
+
 CREATE TABLE issue_requester
 (
     id        INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
