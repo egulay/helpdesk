@@ -11,8 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 import java.util.Date;
@@ -191,6 +193,12 @@ public class IssueRequestController {
     @RequestMapping(value = "/v1/issue_requests/save", method = RequestMethod.POST)
     private ResponseEntity<IssueRequest> saveIssueRequestV1(@RequestBody IssueRequest issueRequest) {
         log.info("Calling: saveIssueRequestV1 >> ".concat(issueRequest.toString()));
+
+        if (!issueRequesterService.isExistsAndActive(issueRequest.getRequesterId(), true)) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
+                    "requesterId:".concat(String.valueOf(issueRequest.getRequesterId()))
+                            .concat(",isActive:true"));
+        }
 
         val requester = issueRequesterService.findById(issueRequest.getRequesterId(), true);
 

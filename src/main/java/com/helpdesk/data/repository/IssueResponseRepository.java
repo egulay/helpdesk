@@ -24,8 +24,4 @@ public interface IssueResponseRepository extends PagingAndSortingRepository<Issu
     Page<IssueResponseModel> findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(Integer requesterId,
                                                                                  Date createdBefore, Date createdAfter,
                                                                                  Pageable pageable);
-
-    boolean existsByRequesterId(Integer requesterId);
-
-    boolean existsByRequestId(Integer requestId);
 }

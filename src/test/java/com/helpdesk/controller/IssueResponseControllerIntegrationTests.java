@@ -6,6 +6,7 @@ import com.helpdesk.data.model.IssueRequesterModel;
 import com.helpdesk.data.model.IssueResponseModel;
 import lombok.val;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
@@ -110,11 +111,11 @@ public class IssueResponseControllerIntegrationTests extends TestBase {
 
     @Test
     public void get_issue_response_by_id_with_exception_test() {
-        val id = 1;
+        val id = Integer.valueOf(RandomStringUtils.random(5, false, true));
         val url = RestConfiguration.LOCALHOST
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_responses/")
-                .concat(String.valueOf(1));
+                .concat(String.valueOf(id));
 
         try {
             restTemplate.getForEntity(url, IssueRequest.class);
@@ -294,6 +295,24 @@ public class IssueResponseControllerIntegrationTests extends TestBase {
     }
 
     @Test
+    public void delete_issue_response_with_exception_test() {
+        val id = Integer.valueOf(RandomStringUtils.random(5, false, true));
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_responses/delete/")
+                .concat(String.valueOf(id));
+
+        try {
+            restTemplate.exchange(url,
+                    HttpMethod.DELETE, null, IssueResponse.class);
+        } catch (final HttpClientErrorException ex) {
+            assertThat(ex.getMessage(), containsString("404"));
+            assertThat(ex.getMessage(), containsString(String.valueOf(id)));
+        }
+    }
+
+    @Test
     public void insert_issue_response_test() {
         insertNewIssueRequester();
         insertNewIssueRequest();
@@ -353,6 +372,57 @@ public class IssueResponseControllerIntegrationTests extends TestBase {
     }
 
     @Test
+    public void insert_issue_response_with_exception_test_2() {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        val id = Integer.valueOf(RandomStringUtils.random(5, false, true));
+
+        val issueResponseToPost = IssueResponse
+                .newBuilder()
+                .setBody("some body")
+                .setRequesterId(id)
+                .setRequestId(newIssueRequest.getId())
+                .build();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_responses/save");
+
+        try {
+            restTemplate.postForEntity(url,
+                    new HttpEntity<>(issueResponseToPost), IssueResponse.class);
+        } catch (final HttpClientErrorException ex) {
+            assertThat(ex.getMessage(), containsString("406"));
+            assertThat(ex.getMessage(), containsString(String.valueOf(id)));
+        }
+    }
+
+    @Test
+    public void insert_issue_response_with_exception_test_3() {
+        insertNewIssueRequester();
+        val id = Integer.valueOf(RandomStringUtils.random(5, false, true));
+
+        val issueResponseToPost = IssueResponse
+                .newBuilder()
+                .setBody("some body")
+                .setRequesterId(newIssueRequester.getId())
+                .setRequestId(id)
+                .build();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_responses/save");
+
+        try {
+            restTemplate.postForEntity(url,
+                    new HttpEntity<>(issueResponseToPost), IssueResponse.class);
+        } catch (final HttpClientErrorException ex) {
+            assertThat(ex.getMessage(), containsString("406"));
+            assertThat(ex.getMessage(), containsString(String.valueOf(id)));
+        }
+    }
+
+    @Test
     public void update_issue_response_test() {
         insertNewIssueRequester();
         insertNewIssueRequest();
@@ -404,6 +474,62 @@ public class IssueResponseControllerIntegrationTests extends TestBase {
         } catch (final HttpClientErrorException ex) {
             assertThat(ex.getMessage(), containsString("400"));
             assertThat(ex.getMessage(), containsString("must not be empty"));
+        }
+    }
+
+    @Test
+    public void update_issue_response_with_exception_test_2() {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+        val id = Integer.valueOf(RandomStringUtils.random(5, false, true));
+
+        val issueResponseToPost = IssueResponse
+                .newBuilder()
+                .setId(newIssueResponse1.getId())
+                .setBody("some body")
+                .setRequesterId(id)
+                .setRequestId(newIssueRequest.getId())
+                .build();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_responses/save");
+
+        try {
+            restTemplate.postForEntity(url,
+                    new HttpEntity<>(issueResponseToPost), IssueResponse.class);
+        } catch (final HttpClientErrorException ex) {
+            assertThat(ex.getMessage(), containsString("406"));
+            assertThat(ex.getMessage(), containsString(String.valueOf(id)));
+        }
+    }
+
+    @Test
+    public void update_issue_response_with_exception_test_3() {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+        val id = Integer.valueOf(RandomStringUtils.random(5, false, true));
+
+        val issueResponseToPost = IssueResponse
+                .newBuilder()
+                .setId(newIssueResponse1.getId())
+                .setBody("some body")
+                .setRequesterId(id)
+                .setRequestId(id)
+                .build();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_responses/save");
+
+        try {
+            restTemplate.postForEntity(url,
+                    new HttpEntity<>(issueResponseToPost), IssueResponse.class);
+        } catch (final HttpClientErrorException ex) {
+            assertThat(ex.getMessage(), containsString("406"));
+            assertThat(ex.getMessage(), containsString(String.valueOf(id)));
         }
     }
 }

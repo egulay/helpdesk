@@ -477,6 +477,49 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
     }
 
     @Test
+    public void insert_issue_requester_with_exception_test_2() {
+        val issueRequesterToPost = IssueRequester
+                .newBuilder()
+                .setFullName("   ")
+                .setEmail("hede@hodo.com")
+                .build();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_requesters/save");
+
+        try {
+            restTemplate.postForEntity(url,
+                    new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
+        } catch (final HttpClientErrorException ex) {
+            assertThat(ex.getMessage(), containsString("400"));
+            assertThat(ex.getMessage(), containsString("must not be empty"));
+        }
+    }
+
+    @Test
+    public void insert_issue_requester_with_exception_test_3() {
+        val email = "hede@hodo";
+        val issueRequesterToPost = IssueRequester
+                .newBuilder()
+                .setFullName("Abuzer Kadayif")
+                .setEmail(email)
+                .build();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_requesters/save");
+
+        try {
+            restTemplate.postForEntity(url,
+                    new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
+        } catch (final HttpClientErrorException ex) {
+            assertThat(ex.getMessage(), containsString("400"));
+            assertThat(ex.getMessage(), containsString(email));
+        }
+    }
+
+    @Test
     public void update_issue_requester_test() {
         insertNewIssueRequester1();
 
@@ -505,12 +548,12 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
     @Test
     public void update_issue_requester_with_exception_test() {
         insertNewIssueRequester1();
-
+        val email = "hede@hodo";
         val issueRequesterToPost = IssueRequester
                 .newBuilder()
                 .setId(newIssueRequester1.getId())
                 .setFullName("Hede Hodo")
-                .setEmail("hede@hodo")
+                .setEmail(email)
                 .build();
 
         val url = RestConfiguration.LOCALHOST
@@ -521,7 +564,7 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                     new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
         } catch (final HttpClientErrorException ex) {
             assertThat(ex.getMessage(), containsString("400"));
-            assertThat(ex.getMessage(), containsString("e-mail must be valid"));
+            assertThat(ex.getMessage(), containsString(email));
         }
     }
 }

@@ -183,10 +183,10 @@ public class IssueRequesterService {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAllByCreatedBeforeAndCreatedAfterAndIsActive(
-                    createdBefore, createdAfter,isActive,
+                    createdBefore, createdAfter, isActive,
                     PageRequest.of(page, size, Sort.by(sortBy).ascending()))
                     : issueRequesterRepository.findAllByCreatedBeforeAndCreatedAfterAndIsActive(
-                    createdBefore, createdAfter,isActive,
+                    createdBefore, createdAfter, isActive,
                     PageRequest.of(page, size, Sort.by(sortBy).descending()));
             if (requesters.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -246,6 +246,15 @@ public class IssueRequesterService {
             requester.setIsActive(!requester.getIsActive());
 
             return issueRequesterRepository.save(requester);
+
+        } catch (final DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        }
+    }
+
+    public Boolean isExistsAndActive(Integer id, Boolean isActive) {
+        try {
+            return issueRequesterRepository.existsByIdAndIsActive(id, isActive);
 
         } catch (final DataIntegrityViolationException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));

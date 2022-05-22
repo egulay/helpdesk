@@ -25,6 +25,4 @@ public interface IssueRequestRepository extends PagingAndSortingRepository<Issue
                                                                              boolean isSolved, Pageable pageable);
 
     Page<IssueRequestModel> findAllBySolvedBeforeAndSolvedAfter(Date solvedBefore, Date solvedAfter, Pageable pageable);
-
-    boolean existsByRequesterId(Integer requesterId);
 }

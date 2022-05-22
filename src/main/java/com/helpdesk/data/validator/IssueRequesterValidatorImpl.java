@@ -14,6 +14,7 @@ public class IssueRequesterValidatorImpl implements IssueRequesterValidator {
     public void validate(IssueRequesterModel model) {
         notBlank.test(model.getFullName()).throwIfInvalid(REQUESTER_FULL_NAME_FIELD_FOR_VALIDATION);
         notBlank.test(model.getEmail()).throwIfInvalid(REQUESTER_EMAIL_FIELD_FOR_VALIDATION);
-        notValidEmail.test(model.getEmail()).throwIfInvalid(REQUESTER_EMAIL_FIELD_FOR_VALIDATION);
+        notValidEmail.test(model.getEmail()).throwIfInvalid(REQUESTER_EMAIL_FIELD_FOR_VALIDATION.concat(":")
+                .concat(model.getEmail()));
     }
 }

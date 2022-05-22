@@ -38,4 +38,6 @@ public interface IssueRequesterRepository extends PagingAndSortingRepository<Iss
                                                                                                 Pageable pageable);
 
     boolean existsAllByEmail(String email);
+
+    boolean existsByIdAndIsActive(Integer id, boolean isActive);
 }

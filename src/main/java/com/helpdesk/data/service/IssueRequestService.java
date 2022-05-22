@@ -223,6 +223,15 @@ public class IssueRequestService {
         }
     }
 
+    public Boolean isExists(Integer id) {
+        try {
+            return issueRequestRepository.existsById(id);
+
+        } catch (final DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        }
+    }
+
     public IssueRequestModel save(IssueRequestModel model) {
         try {
             issueRequestValidator.validate(model);
@@ -263,7 +272,7 @@ public class IssueRequestService {
             val request = issueRequestRepository.findById(id);
             if (request.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "requesterId:".concat(id.toString()));
+                        "requestId:".concat(id.toString()));
             }
 
             return request.get();

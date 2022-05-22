@@ -71,7 +71,7 @@ CREATE TABLE issue_request
     created      DATETIME DEFAULT CURRENT_TIMESTAMP,
     solved       DATETIME NULL,
     FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE issue_response
@@ -82,9 +82,9 @@ CREATE TABLE issue_response
     response_body TEXT NOT NULL,
     created       DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
-        ON DELETE CASCADE,
+        ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (request_id) REFERENCES issue_request (id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 ```
 #### Seed Test Data T-SQL Script
