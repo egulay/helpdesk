@@ -1,10 +1,10 @@
 package com.helpdesk.controller;
 
 import com.google.protobuf.NullValue;
-import com.helpdesk.*;
 import com.helpdesk.data.model.IssueRequesterModel;
 import com.helpdesk.data.service.IssueRequesterService;
 import com.helpdesk.data.util.GenericPagedModel;
+import com.helpdesk.protoGen.*;
 import com.helpdesk.util.SortDirection;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -101,16 +101,16 @@ public class IssueRequesterController {
 
     @RequestMapping(value = "/v1/issue_requesters/find_all_by_full_name/{fullName}", method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueRequestersByFullName(@PathVariable String fullName,
-                                                                    @RequestParam(defaultValue = "") String createdBefore,
-                                                                    @RequestParam(defaultValue = "") String createdAfter,
-                                                                    @RequestParam(defaultValue = "0")
-                                                                    int pageNo,
-                                                                    @RequestParam(defaultValue = "10")
-                                                                    int pageSize,
-                                                                    @RequestParam(defaultValue = "created")
-                                                                    String sortBy,
-                                                                    @RequestParam(defaultValue = "desc")
-                                                                    String sortDir) {
+                                                                      @RequestParam(defaultValue = "") String createdBefore,
+                                                                      @RequestParam(defaultValue = "") String createdAfter,
+                                                                      @RequestParam(defaultValue = "0")
+                                                                      int pageNo,
+                                                                      @RequestParam(defaultValue = "10")
+                                                                      int pageSize,
+                                                                      @RequestParam(defaultValue = "created")
+                                                                      String sortBy,
+                                                                      @RequestParam(defaultValue = "desc")
+                                                                      String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueRequestersByFullName >> Full Name: ".concat(fullName)
                     .concat(" | Created Before: ").concat(createdBefore)
@@ -136,16 +136,16 @@ public class IssueRequesterController {
 
     @RequestMapping(value = "/v1/issue_requesters/find_all_by_email/{email}", method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueRequestersByEmail(@PathVariable String email,
-                                                                 @RequestParam(defaultValue = "") String createdBefore,
-                                                                 @RequestParam(defaultValue = "") String createdAfter,
-                                                                 @RequestParam(defaultValue = "0")
-                                                                 int pageNo,
-                                                                 @RequestParam(defaultValue = "10")
-                                                                 int pageSize,
-                                                                 @RequestParam(defaultValue = "created")
-                                                                 String sortBy,
-                                                                 @RequestParam(defaultValue = "desc")
-                                                                 String sortDir) {
+                                                                   @RequestParam(defaultValue = "") String createdBefore,
+                                                                   @RequestParam(defaultValue = "") String createdAfter,
+                                                                   @RequestParam(defaultValue = "0")
+                                                                   int pageNo,
+                                                                   @RequestParam(defaultValue = "10")
+                                                                   int pageSize,
+                                                                   @RequestParam(defaultValue = "created")
+                                                                   String sortBy,
+                                                                   @RequestParam(defaultValue = "desc")
+                                                                   String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueRequestersByEmail >> E-mail: ".concat(email)
                     .concat(" | Created Before: ").concat(createdBefore)

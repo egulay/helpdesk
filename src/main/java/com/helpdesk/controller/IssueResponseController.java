@@ -1,15 +1,15 @@
 package com.helpdesk.controller;
 
 import com.google.protobuf.NullValue;
-import com.helpdesk.IssueResponse;
-import com.helpdesk.IssueResponses;
-import com.helpdesk.NullableInt64;
-import com.helpdesk.PagedData;
 import com.helpdesk.data.model.IssueResponseModel;
 import com.helpdesk.data.service.IssueRequestService;
 import com.helpdesk.data.service.IssueRequesterService;
 import com.helpdesk.data.service.IssueResponseService;
 import com.helpdesk.data.util.GenericPagedModel;
+import com.helpdesk.protoGen.IssueResponse;
+import com.helpdesk.protoGen.IssueResponses;
+import com.helpdesk.protoGen.NullableInt64;
+import com.helpdesk.protoGen.PagedData;
 import com.helpdesk.util.SortDirection;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;

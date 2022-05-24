@@ -2,7 +2,7 @@ syntax = "proto3";
 option java_multiple_files = true;
 option cc_generic_services = true;
 option java_generic_services = true;
-package com.helpdesk;
+package com.helpdesk.protoGen;
 
 import "IssueRequest.proto";
 import "IssueRequester.proto";

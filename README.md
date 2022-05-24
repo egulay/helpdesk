@@ -108,6 +108,11 @@ VALUES (1, 1, 'It is OK... I am not loving her anymore either :P');
 ```sh
    java -jar target/helpdesk-0.0.1-SNAPSHOT.jar
 ```
+### Open API Documentation (in JSON)
+```sh
+   curl localhost:8888/api-docs
+```
+![Open API Screen Capture](open-api-sc.JPG)
 ### Example API Calls
 #### JSON (HTTP1)
 ```sh

@@ -1,11 +1,11 @@
 package com.helpdesk.controller;
 
 import com.google.protobuf.NullValue;
-import com.helpdesk.*;
 import com.helpdesk.data.model.IssueRequestModel;
 import com.helpdesk.data.service.IssueRequestService;
 import com.helpdesk.data.service.IssueRequesterService;
 import com.helpdesk.data.util.GenericPagedModel;
+import com.helpdesk.protoGen.*;
 import com.helpdesk.util.SortDirection;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;

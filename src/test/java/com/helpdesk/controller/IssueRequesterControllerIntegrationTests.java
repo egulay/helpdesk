@@ -1,7 +1,6 @@
 package com.helpdesk.controller;
 
-import com.helpdesk.IssueRequester;
-import com.helpdesk.PagedData;
+import com.helpdesk.protoGen.*;
 import com.helpdesk.RestConfiguration;
 import com.helpdesk.TestBase;
 import com.helpdesk.data.model.IssueRequesterModel;
