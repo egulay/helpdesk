@@ -6,6 +6,9 @@ spring:
   cloud:
     discovery:
       enabled: false
+springdoc:
+  api-docs:
+    enabled: false
 
 eureka:
   client:
