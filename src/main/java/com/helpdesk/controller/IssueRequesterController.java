@@ -31,8 +31,9 @@ public class IssueRequesterController {
     }
 
     @RequestMapping(value = "/v1/issue_requesters/{id}", method = RequestMethod.GET)
-    private ResponseEntity<IssueRequester> getIssueRequesterByIdV1(@PathVariable String id, @RequestParam(defaultValue = "")
-    String issueRequestIsSolved) {
+    private ResponseEntity<IssueRequester> getIssueRequesterByIdV1(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "") String issueRequestIsSolved) {
         log.info("Calling: getIssueRequesterByIdV1 >> ".concat(id));
 
         val issueRequester = StringUtils.isBlank(issueRequestIsSolved)
@@ -45,22 +46,14 @@ public class IssueRequesterController {
 
     @RequestMapping(value = "/v1/issue_requesters/find_all", method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueRequestersByCreatedBeforeAndCreatedAfter(
-            @RequestParam(defaultValue = "")
-            String createdBefore,
-            @RequestParam(defaultValue = "")
-            String createdAfter,
-            @RequestParam(defaultValue = "")
-            String isActive,
-            @RequestParam(defaultValue = "0")
-            int pageNo,
-            @RequestParam(defaultValue = "10")
-            int pageSize,
-            @RequestParam(defaultValue = "created")
-            String sortBy,
-            @RequestParam(defaultValue = "desc")
-            String sortDir) {
-
-        String logMessage = "Calling: getAllIssueRequestersByCreatedBeforeAndCreatedAfter >> Created Before: "
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "") String isActive,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        val logMessage = "Calling: getAllIssueRequestersByCreatedBeforeAndCreatedAfter >> Created Before: "
                 .concat(createdBefore)
                 .concat(" | Created After: ").concat(createdAfter);
 
@@ -100,17 +93,14 @@ public class IssueRequesterController {
     }
 
     @RequestMapping(value = "/v1/issue_requesters/find_all_by_full_name/{fullName}", method = RequestMethod.GET)
-    private ResponseEntity<PagedData> getAllIssueRequestersByFullName(@PathVariable String fullName,
-                                                                      @RequestParam(defaultValue = "") String createdBefore,
-                                                                      @RequestParam(defaultValue = "") String createdAfter,
-                                                                      @RequestParam(defaultValue = "0")
-                                                                      int pageNo,
-                                                                      @RequestParam(defaultValue = "10")
-                                                                      int pageSize,
-                                                                      @RequestParam(defaultValue = "created")
-                                                                      String sortBy,
-                                                                      @RequestParam(defaultValue = "desc")
-                                                                      String sortDir) {
+    private ResponseEntity<PagedData> getAllIssueRequestersByFullName(
+            @PathVariable String fullName,
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueRequestersByFullName >> Full Name: ".concat(fullName)
                     .concat(" | Created Before: ").concat(createdBefore)
@@ -135,17 +125,14 @@ public class IssueRequesterController {
     }
 
     @RequestMapping(value = "/v1/issue_requesters/find_all_by_email/{email}", method = RequestMethod.GET)
-    private ResponseEntity<PagedData> getAllIssueRequestersByEmail(@PathVariable String email,
-                                                                   @RequestParam(defaultValue = "") String createdBefore,
-                                                                   @RequestParam(defaultValue = "") String createdAfter,
-                                                                   @RequestParam(defaultValue = "0")
-                                                                   int pageNo,
-                                                                   @RequestParam(defaultValue = "10")
-                                                                   int pageSize,
-                                                                   @RequestParam(defaultValue = "created")
-                                                                   String sortBy,
-                                                                   @RequestParam(defaultValue = "desc")
-                                                                   String sortDir) {
+    private ResponseEntity<PagedData> getAllIssueRequestersByEmail(
+            @PathVariable String email,
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueRequestersByEmail >> E-mail: ".concat(email)
                     .concat(" | Created Before: ").concat(createdBefore)

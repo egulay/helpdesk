@@ -57,19 +57,12 @@ public class IssueResponseController {
 
     @RequestMapping(value = "/v1/issue_responses/find_all", method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueResponsesByCreatedBeforeAndCreatedAfter(
-            @RequestParam(defaultValue = "")
-            String createdBefore,
-            @RequestParam(defaultValue = "")
-            String createdAfter,
-            @RequestParam(defaultValue = "0")
-            int pageNo,
-            @RequestParam(defaultValue = "10")
-            int pageSize,
-            @RequestParam(defaultValue = "created")
-            String sortBy,
-            @RequestParam(defaultValue = "desc")
-            String sortDir) {
-
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueResponsesByCreatedBeforeAndCreatedAfter >> Created Before: "
                     .concat(createdBefore)
@@ -95,19 +88,12 @@ public class IssueResponseController {
     @RequestMapping(value = "/v1/issue_responses/find_all_by_requester/{requesterId}", method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueResponsesByRequesterIdAndCreatedBeforeAndCreatedAfter(
             @PathVariable String requesterId,
-            @RequestParam(defaultValue = "")
-            String createdBefore,
-            @RequestParam(defaultValue = "")
-            String createdAfter,
-            @RequestParam(defaultValue = "0")
-            int pageNo,
-            @RequestParam(defaultValue = "10")
-            int pageSize,
-            @RequestParam(defaultValue = "created")
-            String sortBy,
-            @RequestParam(defaultValue = "desc")
-            String sortDir) {
-
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueResponsesByRequesterIdAndCreatedBeforeAndCreatedAfter >> Requester Id: "
                     .concat(requesterId)
@@ -136,19 +122,12 @@ public class IssueResponseController {
     @RequestMapping(value = "/v1/issue_responses/find_all_by_request/{requestId}", method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueResponsesByRequestIdAndCreatedBeforeAndCreatedAfter(
             @PathVariable String requestId,
-            @RequestParam(defaultValue = "")
-            String createdBefore,
-            @RequestParam(defaultValue = "")
-            String createdAfter,
-            @RequestParam(defaultValue = "0")
-            int pageNo,
-            @RequestParam(defaultValue = "10")
-            int pageSize,
-            @RequestParam(defaultValue = "created")
-            String sortBy,
-            @RequestParam(defaultValue = "desc")
-            String sortDir) {
-
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueResponsesByRequestIdAndCreatedBeforeAndCreatedAfter >> Request Id: "
                     .concat(requestId)

@@ -38,8 +38,9 @@ public class IssueRequestController {
     }
 
     @RequestMapping(value = "/v1/issue_requests/{id}", method = RequestMethod.GET)
-    private ResponseEntity<IssueRequest> getIssueRequestByIdV1(@PathVariable String id, @RequestParam(defaultValue = "")
-    String issueRequestIsSolved) {
+    private ResponseEntity<IssueRequest> getIssueRequestByIdV1(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "") String issueRequestIsSolved) {
         log.info("Calling: getIssueRequestByIdV1 >> ".concat(id));
 
         val issueRequest = StringUtils.isBlank(issueRequestIsSolved)
@@ -51,17 +52,14 @@ public class IssueRequestController {
     }
 
     @RequestMapping(value = "/v1/issue_requests/find_all/{requesterId}", method = RequestMethod.GET)
-    private ResponseEntity<PagedData> getAllIssueRequestsByRequesterId(@PathVariable String requesterId,
-                                                                       @RequestParam(defaultValue = "") String createdBefore,
-                                                                       @RequestParam(defaultValue = "") String createdAfter,
-                                                                       @RequestParam(defaultValue = "0")
-                                                                       int pageNo,
-                                                                       @RequestParam(defaultValue = "10")
-                                                                       int pageSize,
-                                                                       @RequestParam(defaultValue = "created")
-                                                                       String sortBy,
-                                                                       @RequestParam(defaultValue = "desc")
-                                                                       String sortDir) {
+    private ResponseEntity<PagedData> getAllIssueRequestsByRequesterId(
+            @PathVariable String requesterId,
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueRequestsByRequesterId >> Requester Id: ".concat(requesterId)
                     .concat(" | Created Before: ").concat(createdBefore)
@@ -89,15 +87,10 @@ public class IssueRequestController {
     private ResponseEntity<PagedData> getAllIssueRequestsByCreatedBeforeAndCreatedAfter(
             @RequestParam(defaultValue = "") String createdBefore,
             @RequestParam(defaultValue = "") String createdAfter,
-            @RequestParam(defaultValue = "0")
-            int pageNo,
-            @RequestParam(defaultValue = "10")
-            int pageSize,
-            @RequestParam(defaultValue = "created")
-            String sortBy,
-            @RequestParam(defaultValue = "desc")
-            String sortDir) {
-
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
             log.info("Calling: getAllIssueRequestsByCreatedBeforeAndCreatedAfter >> Created Before: ".concat(createdBefore)
                     .concat(" | Created After: ").concat(createdAfter));
@@ -123,14 +116,10 @@ public class IssueRequestController {
             @PathVariable String isSolved,
             @RequestParam(defaultValue = "") String createdBefore,
             @RequestParam(defaultValue = "") String createdAfter,
-            @RequestParam(defaultValue = "0")
-            int pageNo,
-            @RequestParam(defaultValue = "10")
-            int pageSize,
-            @RequestParam(defaultValue = "created")
-            String sortBy,
-            @RequestParam(defaultValue = "desc")
-            String sortDir) {
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         log.info("Calling: getAllIssueRequestsByCreatedBeforeAndCreatedAfterAndIsSolved >> Created Before: "
                 .concat(createdBefore)
                 .concat(" | Created After: ").concat(createdAfter)
@@ -150,15 +139,10 @@ public class IssueRequestController {
     private ResponseEntity<PagedData> getAllIssueRequestsBySolvedBeforeAndSolvedAfter(
             @RequestParam(defaultValue = "") String solvedBefore,
             @RequestParam(defaultValue = "") String solvedAfter,
-            @RequestParam(defaultValue = "0")
-            int pageNo,
-            @RequestParam(defaultValue = "10")
-            int pageSize,
-            @RequestParam(defaultValue = "solved")
-            String sortBy,
-            @RequestParam(defaultValue = "desc")
-            String sortDir) {
-
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "solved") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         log.info("Calling: getAllIssueRequestsBySolvedBeforeAndSolvedAfter >> Solved Before: ".concat(solvedBefore)
                 .concat(" | Solved After: ").concat(solvedAfter));
 
