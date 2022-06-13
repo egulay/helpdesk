@@ -39,8 +39,8 @@ public class IssueRequesterService {
         return getRequester(id, isActive);
     }
 
-    public GenericPagedModel<IssueRequesterModel> findAll(int page, int size,
-                                                          String sortBy, SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequesterModel> findAll(
+            int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAll(PageRequest.of(page, size, Sort.by(sortBy).ascending()))
@@ -61,10 +61,8 @@ public class IssueRequesterService {
         }
     }
 
-    public GenericPagedModel<IssueRequesterModel> findAllByFullNameContainingIgnoreCase(String fullName,
-                                                                                        int page, int size,
-                                                                                        String sortBy,
-                                                                                        SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequesterModel> findAllByFullNameContainingIgnoreCase(
+            String fullName, int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAllByFullNameContainingIgnoreCase(fullName,
@@ -88,9 +86,9 @@ public class IssueRequesterService {
         }
     }
 
-    public GenericPagedModel<IssueRequesterModel> findAllByFullNameContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter
-            (String fullName, Date createdBefore, Date createdAfter, int page, int size,
-             String sortBy, SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequesterModel> findAllByFullNameContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
+            String fullName, Date createdBefore, Date createdAfter, int page, int size, String sortBy,
+            SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAllByFullNameContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
@@ -120,8 +118,8 @@ public class IssueRequesterService {
         }
     }
 
-    public GenericPagedModel<IssueRequesterModel> findAllByEmailContainingIgnoreCase(String email, int page, int size,
-                                                                                     String sortBy, SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequesterModel> findAllByEmailContainingIgnoreCase(
+            String email, int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAllByEmailContainingIgnoreCase(email,
@@ -145,9 +143,9 @@ public class IssueRequesterService {
         }
     }
 
-    public GenericPagedModel<IssueRequesterModel> findAllByEmailContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter
-            (String email, Date createdBefore, Date createdAfter, int page, int size,
-             String sortBy, SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequesterModel> findAllByEmailContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
+            String email, Date createdBefore, Date createdAfter, int page, int size, String sortBy,
+            SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAllByEmailContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
@@ -177,9 +175,9 @@ public class IssueRequesterService {
         }
     }
 
-    public GenericPagedModel<IssueRequesterModel> findAllByCreatedBeforeAndCreatedAfterAndIsActive
-            (Date createdBefore, Date createdAfter, boolean isActive, int page, int size,
-             String sortBy, SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequesterModel> findAllByCreatedBeforeAndCreatedAfterAndIsActive(
+            Date createdBefore, Date createdAfter, boolean isActive, int page, int size, String sortBy,
+            SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAllByCreatedBeforeAndCreatedAfterAndIsActive(
@@ -209,11 +207,8 @@ public class IssueRequesterService {
         }
     }
 
-    public GenericPagedModel<IssueRequesterModel> findAllByCreatedBeforeAndCreatedAfter(Date createdBefore,
-                                                                                        Date createdAfter,
-                                                                                        int page, int size,
-                                                                                        String sortBy,
-                                                                                        SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequesterModel> findAllByCreatedBeforeAndCreatedAfter(
+            Date createdBefore, Date createdAfter, int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAllByCreatedBeforeAndCreatedAfter(createdBefore, createdAfter,

@@ -10,18 +10,12 @@ import java.util.Date;
 
 @Repository
 public interface IssueResponseRepository extends PagingAndSortingRepository<IssueResponseModel, Integer> {
-    Page<IssueResponseModel> findAllByCreatedBeforeAndCreatedAfter(Date createdBefore, Date createdAfter,
-                                                                   Pageable pageable);
-
+    Page<IssueResponseModel> findAllByCreatedBeforeAndCreatedAfter(
+            Date createdBefore, Date createdAfter, Pageable pageable);
     Page<IssueResponseModel> findAllByRequestId(Integer requestId, Pageable pageable);
-
-    Page<IssueResponseModel> findAllByRequestIdAndCreatedBeforeAndCreatedAfter(Integer requestId,
-                                                                               Date createdBefore, Date createdAfter,
-                                                                               Pageable pageable);
-
+    Page<IssueResponseModel> findAllByRequestIdAndCreatedBeforeAndCreatedAfter(
+            Integer requestId, Date createdBefore, Date createdAfter, Pageable pageable);
     Page<IssueResponseModel> findAllByRequesterId(Integer requesterId, Pageable pageable);
-
-    Page<IssueResponseModel> findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(Integer requesterId,
-                                                                                 Date createdBefore, Date createdAfter,
-                                                                                 Pageable pageable);
+    Page<IssueResponseModel> findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
+            Integer requesterId, Date createdBefore, Date createdAfter, Pageable pageable);
 }

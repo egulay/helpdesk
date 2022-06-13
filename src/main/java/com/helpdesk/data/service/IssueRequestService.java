@@ -39,8 +39,8 @@ public class IssueRequestService {
         return getRequest(id, isSolved);
     }
 
-    public GenericPagedModel<IssueRequestModel> findAll(int page, int size,
-                                                        String sortBy, SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequestModel> findAll(
+            int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequestRepository.findAll(PageRequest.of(page, size, Sort.by(sortBy).ascending()))
@@ -61,11 +61,8 @@ public class IssueRequestService {
         }
     }
 
-    public GenericPagedModel<IssueRequestModel> findAllByCreatedBeforeAndCreatedAfter(Date createdBefore,
-                                                                                      Date createdAfter,
-                                                                                      int page, int size,
-                                                                                      String sortBy,
-                                                                                      SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequestModel> findAllByCreatedBeforeAndCreatedAfter(
+            Date createdBefore, Date createdAfter, int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requests = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequestRepository.findAllByCreatedBeforeAndCreatedAfter(createdBefore, createdAfter,
@@ -91,12 +88,9 @@ public class IssueRequestService {
         }
     }
 
-    public GenericPagedModel<IssueRequestModel> findAllByCreatedBeforeAndCreatedAfterAndIsSolved(Date createdBefore,
-                                                                                                 Date createdAfter,
-                                                                                                 boolean isSolved,
-                                                                                                 int page, int size,
-                                                                                                 String sortBy,
-                                                                                                 SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequestModel> findAllByCreatedBeforeAndCreatedAfterAndIsSolved(
+            Date createdBefore, Date createdAfter, boolean isSolved, int page, int size, String sortBy,
+            SortDirection sortDirection) {
         try {
             val requests = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequestRepository.findAllByCreatedBeforeAndCreatedAfterAndIsSolved(createdBefore, createdAfter,
@@ -123,11 +117,8 @@ public class IssueRequestService {
         }
     }
 
-    public GenericPagedModel<IssueRequestModel> findAllBySolvedBeforeAndSolvedAfter(Date solvedBefore,
-                                                                                    Date solvedAfter,
-                                                                                    int page, int size,
-                                                                                    String sortBy,
-                                                                                    SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequestModel> findAllBySolvedBeforeAndSolvedAfter(
+            Date solvedBefore, Date solvedAfter, int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requests = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequestRepository.findAllBySolvedBeforeAndSolvedAfter(solvedBefore, solvedAfter,
@@ -153,9 +144,8 @@ public class IssueRequestService {
         }
     }
 
-    public GenericPagedModel<IssueRequestModel> findAllByRequesterId(Integer requesterId, int page, int size,
-                                                                     String sortBy,
-                                                                     SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequestModel> findAllByRequesterId(
+            Integer requesterId, int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requests = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequestRepository.findAllByRequesterId(requesterId,
@@ -179,9 +169,9 @@ public class IssueRequestService {
         }
     }
 
-    public GenericPagedModel<IssueRequestModel> findAllByRequesterIdAndCreatedBeforeAndCreatedAfter
-            (Integer requesterId, Date createdBefore, Date createdAfter, int page, int size, String sortBy,
-             SortDirection sortDirection) {
+    public GenericPagedModel<IssueRequestModel> findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
+            Integer requesterId, Date createdBefore, Date createdAfter, int page, int size, String sortBy,
+            SortDirection sortDirection) {
         try {
             val requests = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequestRepository.findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(requesterId,
