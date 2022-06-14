@@ -5,9 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Collections;
 
 @SpringBootApplication
 public class HelpdeskApplication {
@@ -24,10 +21,5 @@ public class HelpdeskApplication {
     @Bean
     PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
-    }
-
-    @Bean
-    RestTemplate restTemplate(ProtobufHttpMessageConverter hmc) {
-        return new RestTemplate(Collections.singletonList(hmc));
     }
 }
