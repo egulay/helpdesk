@@ -1,6 +1,7 @@
 package com.helpdesk.util;
 
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,7 +30,12 @@ public enum SortDirection {
         this.aliases = aliases;
     }
 
-    public static SortDirection getSortDirection(String alias) {
+    public static SortDirection of(String alias) {
+        if (StringUtils.isBlank(alias)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "SortDirection cannot be empty");
+        }
+
         val sd = sortDirections.get(alias.toLowerCase());
         if (Objects.isNull(sd)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

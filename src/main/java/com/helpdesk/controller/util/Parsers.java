@@ -9,7 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Objects;
 
 public class Parsers {
-    public static Boolean getBoolean(String value, String property) {
+    public static Boolean tryParseBoolean(String value, String property) {
         val result = BooleanUtils.toBooleanObject(value);
 
         if (Objects.isNull(result)) {
@@ -19,7 +19,7 @@ public class Parsers {
         return result;
     }
 
-    public static Integer getInteger(String value, String property) {
+    public static Integer tryParseInteger(String value, String property) {
         val result = NumberUtils.toInt(value, -1);
 
         if (result == -1) {
@@ -29,7 +29,7 @@ public class Parsers {
         return result;
     }
 
-    public static Long getLong(String value, String property) {
+    public static Long tryParseLong(String value, String property) {
         val result = NumberUtils.toLong(value, -1);
 
         if (result == -1) {

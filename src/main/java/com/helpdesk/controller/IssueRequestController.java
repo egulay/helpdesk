@@ -44,9 +44,9 @@ public class IssueRequestController {
         log.info("Calling: getIssueRequestByIdV1 >> ".concat(id));
 
         val issueRequest = StringUtils.isBlank(issueRequestIsSolved)
-                ? issueRequestService.findById(getInteger(id, "id"))
-                : issueRequestService.findById(getInteger(id, "id")
-                , getBoolean(issueRequestIsSolved, "issueRequestIsSolved"));
+                ? issueRequestService.findById(tryParseInteger(id, "id"))
+                : issueRequestService.findById(tryParseInteger(id, "id")
+                , tryParseBoolean(issueRequestIsSolved, "issueRequestIsSolved"));
 
         return ResponseEntity.ok(mapIssueRequest(issueRequest));
     }
@@ -66,10 +66,10 @@ public class IssueRequestController {
                     .concat(" | Created After: ").concat(createdAfter));
 
             val result = issueRequestService
-                    .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(getInteger(requesterId, "requesterId"),
-                            new Date(getLong(createdBefore, "createdBefore")),
-                            new Date(getLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                    .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(tryParseInteger(requesterId, "requesterId"),
+                            new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -77,8 +77,8 @@ public class IssueRequestController {
         log.info("Calling: getAllIssueRequestsByRequesterId >> Requester Id: ".concat(requesterId));
 
         val result = issueRequestService
-                .findAllByRequesterId(getInteger(requesterId, "requesterId"), pageNo, pageSize, sortBy
-                        , SortDirection.getSortDirection(sortDir));
+                .findAllByRequesterId(tryParseInteger(requesterId, "requesterId"), pageNo, pageSize, sortBy
+                        , SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -96,9 +96,9 @@ public class IssueRequestController {
                     .concat(" | Created After: ").concat(createdAfter));
 
             val result = issueRequestService
-                    .findAllByCreatedBeforeAndCreatedAfter(new Date(getLong(createdBefore, "createdBefore")),
-                            new Date(getLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                    .findAllByCreatedBeforeAndCreatedAfter(new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -106,7 +106,7 @@ public class IssueRequestController {
         log.info("Calling: getAllIssueRequestsByCreatedBeforeAndCreatedAfter");
 
         val result = issueRequestService
-                .findAll(pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                .findAll(pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -127,10 +127,10 @@ public class IssueRequestController {
 
         val result = issueRequestService
                 .findAllByCreatedBeforeAndCreatedAfterAndIsSolved(
-                        new Date(getLong(createdBefore, "createdBefore")),
-                        new Date(getLong(createdAfter, "createdAfter")),
-                        getBoolean(isSolved, "isSolved"),
-                        pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                        new Date(tryParseLong(createdBefore, "createdBefore")),
+                        new Date(tryParseLong(createdAfter, "createdAfter")),
+                        tryParseBoolean(isSolved, "isSolved"),
+                        pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -148,9 +148,9 @@ public class IssueRequestController {
 
         val result = issueRequestService
                 .findAllBySolvedBeforeAndSolvedAfter(
-                        new Date(getLong(solvedBefore, "solvedBefore")),
-                        new Date(getLong(solvedAfter, "solvedAfter")),
-                        pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                        new Date(tryParseLong(solvedBefore, "solvedBefore")),
+                        new Date(tryParseLong(solvedAfter, "solvedAfter")),
+                        pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -159,7 +159,7 @@ public class IssueRequestController {
     private ResponseEntity<IssueRequest> putSolveIssueRequestV1(@PathVariable String id) {
         log.info("Calling: putSolveIssueRequestV1 >> ".concat(id));
 
-        val result = issueRequestService.solveIssue(getInteger(id, "id"));
+        val result = issueRequestService.solveIssue(tryParseInteger(id, "id"));
 
         return ResponseEntity.ok(mapIssueRequest(result));
     }
@@ -168,7 +168,7 @@ public class IssueRequestController {
     private ResponseEntity<IssueRequest> deleteIssueRequestV1(@PathVariable String id) {
         log.info("Calling: deleteIssueRequestV1 >> ".concat(id));
 
-        val result = issueRequestService.hardDelete(getInteger(id, "id"));
+        val result = issueRequestService.hardDelete(tryParseInteger(id, "id"));
 
         return ResponseEntity.ok(mapIssueRequest(result));
     }

@@ -19,15 +19,15 @@ The solution requires up-to-date [Docker](https://www.docker.com/products/docker
 ### Base [Docker](https://www.docker.com/products/docker-desktop/) Images for Integration Tests
 * #### Testcontainers version 0.3.3
 ```sh
-   docker pull testcontainers/ryuk:0.3.3
+docker pull testcontainers/ryuk:0.3.3
 ```
 * #### MySQL version 8.0
 ```sh
-   docker pull mysql:8.0
+docker pull mysql:8.0
 ```
 ### Building the Project
 ```sh
-   mvn clean install
+mvn clean install
 ```
 * Above command creates Java source files located in proto directory, execute tests and compile the solution.
 #### Create Developer User T-SQL Script
@@ -106,25 +106,25 @@ VALUES (1, 1, 'It is OK... I am not loving her anymore either :P');
 ```
 ### Starting the API
 ```sh
-   java -jar target/helpdesk-0.0.1-SNAPSHOT.jar
+java -jar target/helpdesk-0.0.1-SNAPSHOT.jar
 ```
 ### Open API Documentation (in JSON)
 ```sh
-   curl localhost:8888/api-docs
+curl localhost:8888/api-docs
 ```
 ![Open API Screen Capture](open-api-sc.JPG)
 ### Example API Calls
 #### JSON (HTTP1)
 ```sh
-   curl --header "accept: application/json" localhost:8888/v1/issue_requesters/1
+curl --header "accept: application/json" localhost:8888/v1/issue_requesters/1
 ```
 #### XML (HTTP1)
 ```sh
-   curl --header "accept: application/xml" localhost:8888/v1/issue_requesters/1
+curl --header "accept: application/xml" localhost:8888/v1/issue_requesters/1
 ```
 #### gRPC / Binary (HTTP2)
 ```sh
-   curl localhost:8888/v1/issue_requesters/1
+curl localhost:8888/v1/issue_requesters/1
 ```
 
 ### License

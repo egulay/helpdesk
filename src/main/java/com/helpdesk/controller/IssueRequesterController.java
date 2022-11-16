@@ -37,9 +37,9 @@ public class IssueRequesterController {
         log.info("Calling: getIssueRequesterByIdV1 >> ".concat(id));
 
         val issueRequester = StringUtils.isBlank(issueRequestIsSolved)
-                ? issueRequesterService.findById(getInteger(id, "id"))
-                : issueRequesterService.findById(getInteger(id, "id")
-                , getBoolean(issueRequestIsSolved, "issueRequestIsSolved"));
+                ? issueRequesterService.findById(tryParseInteger(id, "id"))
+                : issueRequesterService.findById(tryParseInteger(id, "id")
+                , tryParseBoolean(issueRequestIsSolved, "issueRequestIsSolved"));
 
         return ResponseEntity.ok(mapIssueRequester(issueRequester));
     }
@@ -64,10 +64,10 @@ public class IssueRequesterController {
 
             val result = issueRequesterService
                     .findAllByCreatedBeforeAndCreatedAfterAndIsActive(
-                            new Date(getLong(createdBefore, "createdBefore")),
-                            new Date(getLong(createdAfter, "createdAfter")),
-                            getBoolean(isActive, "isActive"),
-                            pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                            new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            tryParseBoolean(isActive, "isActive"),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -76,9 +76,9 @@ public class IssueRequesterController {
             log.info(logMessage);
 
             val result = issueRequesterService
-                    .findAllByCreatedBeforeAndCreatedAfter(new Date(getLong(createdBefore, "createdBefore")),
-                            new Date(getLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                    .findAllByCreatedBeforeAndCreatedAfter(new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -87,7 +87,7 @@ public class IssueRequesterController {
 
         val result = issueRequesterService
                 .findAll(pageNo, pageSize, sortBy
-                        , SortDirection.getSortDirection(sortDir));
+                        , SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -108,9 +108,9 @@ public class IssueRequesterController {
 
             val result = issueRequesterService
                     .findAllByFullNameContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(fullName,
-                            new Date(getLong(createdBefore, "createdBefore")),
-                            new Date(getLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                            new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -119,7 +119,7 @@ public class IssueRequesterController {
 
         val result = issueRequesterService
                 .findAllByFullNameContainingIgnoreCase(fullName, pageNo, pageSize, sortBy
-                        , SortDirection.getSortDirection(sortDir));
+                        , SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -140,9 +140,9 @@ public class IssueRequesterController {
 
             val result = issueRequesterService
                     .findAllByEmailContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(email,
-                            new Date(getLong(createdBefore, "createdBefore")),
-                            new Date(getLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.getSortDirection(sortDir));
+                            new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -151,7 +151,7 @@ public class IssueRequesterController {
 
         val result = issueRequesterService
                 .findAllByEmailContainingIgnoreCase(email, pageNo, pageSize, sortBy
-                        , SortDirection.getSortDirection(sortDir));
+                        , SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -160,7 +160,7 @@ public class IssueRequesterController {
     private ResponseEntity<IssueRequester> toggleIssueRequesterActivationV1(@PathVariable String id) {
         log.info("Calling: toggleIssueRequesterActivationV1 >> ".concat(id));
 
-        val requester = issueRequesterService.toggleActivation(getInteger(id, "id"));
+        val requester = issueRequesterService.toggleActivation(tryParseInteger(id, "id"));
 
         return ResponseEntity.ok(mapIssueRequester(requester));
     }
@@ -169,7 +169,7 @@ public class IssueRequesterController {
     private ResponseEntity<IssueRequester> deleteIssueRequesterV1(@PathVariable String id) {
         log.info("Calling: deleteIssueRequesterV1 >> ".concat(id));
 
-        val result = issueRequesterService.hardDelete(getInteger(id, "id"));
+        val result = issueRequesterService.hardDelete(tryParseInteger(id, "id"));
 
         return ResponseEntity.ok(mapIssueRequester(result));
     }
