@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -19,11 +20,9 @@ public enum SortDirection {
     private static final Map<String, SortDirection> sortDirections = new HashMap<>();
 
     static {
-        for (val sd : SortDirection.values()) {
-            for (String alias : sd.aliases) {
-                sortDirections.put(alias, sd);
-            }
-        }
+        Arrays.stream(SortDirection.values())
+                .forEach(sd -> Arrays.stream(sd.aliases)
+                        .forEach(a -> sortDirections.put(a, sd)));
     }
 
     SortDirection(String... aliases) {
