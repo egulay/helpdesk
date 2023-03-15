@@ -2,13 +2,14 @@ spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/help_desk
-    username: dev_user
+    username: root
     password: 111
   jpa:
     hibernate.ddl-auto: update
     generate-ddl: true
     show-sql: false
     open-in-view: false
+    database: mysql
   main:
     banner-mode: console
   cloud:
