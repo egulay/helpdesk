@@ -26,7 +26,7 @@ docker pull testcontainers/ryuk:0.3.3
 docker pull mysql:8.0
 ```
 ---
-> **_NOTE:_** Protobuf compiler required to built Java classes from .proto files located in proto directory. The definition of the protoc path is located in pom.xml's plugins section named protocExecutable like below
+> **_NOTE:_** Protobuf compiler is required to built Java classes from .proto files located in proto directory. The definition of the protoc path is located in pom.xml's plugins section named protocExecutable like below
 ```xml
 <plugin>
     <groupId>org.xolstice.maven.plugins</groupId>
