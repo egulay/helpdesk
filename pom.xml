@@ -19,11 +19,11 @@
         <os-maven-plugin.version>1.6.1</os-maven-plugin.version>
 
         <protobuf-java-format.version>1.4</protobuf-java-format.version>
-        <protobuf-java.version>3.21.7</protobuf-java.version>
-        <google-api-client.version>1.34.1</google-api-client.version>
-        <proto-google-common-protos.version>2.8.3</proto-google-common-protos.version>
-        <grpc-core.version>1.46.0</grpc-core.version>
-        <googleapis-common-protos.version>0.0.3</googleapis-common-protos.version>
+        <protobuf-java.version>4.28.2</protobuf-java.version>
+        <google-api-client.version>2.7.0</google-api-client.version>
+        <proto-google-common-protos.version>2.46.0</proto-google-common-protos.version>
+        <grpc-core.version>1.68.0</grpc-core.version>
+        <proto-google-common-protos.version>2.46.0</proto-google-common-protos.version>
         <protobuf-java-util.version>3.20.1</protobuf-java-util.version>
 
         <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
@@ -57,6 +57,14 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
 
         <dependency>
@@ -96,11 +104,11 @@
             <artifactId>grpc-core</artifactId>
             <version>${grpc-core.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.api.grpc</groupId>
-            <artifactId>googleapis-common-protos</artifactId>
-            <version>${googleapis-common-protos.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.api.grpc</groupId>-->
+<!--            <artifactId>proto-google-common-protos</artifactId>-->
+<!--            <version>${proto-google-common-protos.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
@@ -174,7 +182,7 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
-                    <protocExecutable>/opt/homebrew/bin/protoc-3.21.12.0</protocExecutable>
+                    <protocExecutable>/opt/homebrew/Cellar/protobuf/28.2/bin/protoc</protocExecutable>
                 </configuration>
                 <executions>
                     <execution>
