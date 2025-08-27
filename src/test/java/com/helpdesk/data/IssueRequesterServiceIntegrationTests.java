@@ -3,7 +3,7 @@ package com.helpdesk.data;
 import com.helpdesk.TestBase;
 import com.helpdesk.data.model.IssueRequesterModel;
 import com.helpdesk.data.util.GenericPagedModel;
-import com.helpdesk.util.SortDirection;
+import com.helpdesk.data.util.SortDirection;
 import lombok.val;
 import org.junit.Before;
 import org.junit.Test;

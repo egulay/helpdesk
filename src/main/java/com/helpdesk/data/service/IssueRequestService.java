@@ -4,7 +4,7 @@ import com.helpdesk.data.model.IssueRequestModel;
 import com.helpdesk.data.repository.IssueRequestRepository;
 import com.helpdesk.data.util.ExceptionMapperUtil;
 import com.helpdesk.data.util.GenericPagedModel;
-import com.helpdesk.util.SortDirection;
+import com.helpdesk.data.util.SortDirection;
 import jakarta.validation.ConstraintViolationException;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
