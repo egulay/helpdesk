@@ -12,9 +12,10 @@
 - JUnit 5 – used for testing the code
 - Testcontainers – runs temporary databases in Docker for tests
 - Lombok – reduces boilerplate code in Java classes
+- HashiCorp Vault – tool that stores secrets (like passwords and connection strings) safely
 
 ## Installation & Execution
-The solution requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
+You need the latest [Docker Desktop](https://www.docker.com/products/docker-desktop/) to run integration tests with the Maven Surefire plugin.
 ### Base [Docker](https://www.docker.com/products/docker-desktop/) Images for Integration Tests
 * #### Testcontainers version 0.3.3
 ```sh
@@ -25,7 +26,8 @@ docker pull testcontainers/ryuk:0.3.3
 docker pull mysql:8.0
 ```
 ---
-> **_NOTE:_** Protobuf compiler is required to built Java classes from .proto files located in proto directory. The definition of the protoc path is located in pom.xml's plugins section named protocExecutable like below
+> **_NOTE:_** The Protobuf compiler is required to build Java classes from the ".proto" files in the 
+proto directory. The path to protoc is set in the pom.xml plugin configuration (see protocExecutable), for example:
 ```xml
 <!-- Protobuf codegen (kept your protoc path) -->
 <plugin>
@@ -49,10 +51,21 @@ docker pull mysql:8.0
 ```sh
 mvn clean install
 ```
-* Above command creates Java source files located in proto directory, execute tests and compile the solution.
+* This command generates Java sources from the proto directory, runs the tests, and compiles the project.
 
-* The user info defined in above T-SQL also defined in [application.yml](https://github.com/egulay/helpdesk/blob/master/src/main/resources/application.yml).
-#### DDL Script
+### Development Mode Guide
+#### 1) Run MySQL 8 (Docker)
+```bash
+docker run -d --name mysql8 \
+  -p 3306:3306 \
+  -e MYSQL_DATABASE=help_desk \
+  -e MYSQL_USER=help_user \
+  -e MYSQL_PASSWORD=help_pass \
+  -e MYSQL_ROOT_PASSWORD=root_pass \
+  mysql:8.0
+```
+
+#### 2) Execute DDL Script
 ```mysql
 DROP DATABASE IF EXISTS help_desk;
 
@@ -101,7 +114,7 @@ CREATE TABLE issue_response
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 ```
-#### Seed Test Data T-SQL Script
+#### 3) Seed Test Data (SQL)
 ```mysql
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE issue_response;
@@ -118,7 +131,60 @@ VALUES (1, 'Elise is not loving me anymore..!');
 INSERT INTO issue_response (request_id, requester_id, response_body)
 VALUES (1, 1, 'It is OK... I am not loving her anymore either :P');
 ```
-### Starting the API
+#### 4) Run Vault (dev mode, Docker)
+```bash
+docker run -d --name vault \
+  -p 8200:8200 \
+  -e VAULT_DEV_ROOT_TOKEN_ID=root \
+  -e VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200 \
+  hashicorp/vault:latest \
+  server -dev -dev-root-token-id=root -dev-listen-address=0.0.0.0:8200
+```
+#### 5) Set environment variables on your host terminal
+```bash
+export VAULT_ADDR=http://localhost:8200
+export VAULT_TOKEN=root
+```
+#### 6) Save your DB settings into Vault (KV v2)
+It stores the properties with the same keys Spring uses. Spring will read them directly from `secret/helpdesk`.
+```bash
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault \
+  vault kv put secret/helpdesk \
+    spring.datasource.url="jdbc:mysql://localhost:3306/help_desk?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
+    spring.datasource.username="help_user" \
+    spring.datasource.password="help_pass" \
+    spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
+    spring.datasource.hikari.auto-commit="false" \
+    spring.datasource.hikari.transaction-isolation="TRANSACTION_READ_COMMITTED" \
+    spring.datasource.hikari.minimum-idle="2" \
+    spring.datasource.hikari.maximum-pool-size="10" \
+    spring.datasource.hikari.pool-name="HikariPool"
+```
+Check the secret:
+```bash
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault \
+  vault kv get secret/helpdesk
+```
+
+#### 7) Tell Spring Boot to read from Vault
+```yaml
+spring:
+  application:
+    name: helpdesk
+  config:
+    import: optional:vault://   # read config from Vault at startup
+  cloud:
+    vault:
+      enabled: true
+      uri: http://localhost:8200
+      token: root
+      kv:
+        enabled: true
+        backend: secret
+        application-name: ${spring.application.name}
+```
+
+#### 8) Start the API
 ```sh
 java -jar target/helpdesk-0.0.1-SNAPSHOT.jar
 ```
@@ -128,15 +194,15 @@ curl localhost:8888/api-docs
 ```
 ![Open API Screen Capture](open-api-sc.JPG)
 ### Example API Calls
-#### JSON (HTTP1)
+#### JSON (HTTP/1.1)
 ```sh
 curl --header "accept: application/json" localhost:8888/v1/issue_requesters/1
 ```
-#### XML (HTTP1)
+#### XML (HTTP/1.1)
 ```sh
 curl --header "accept: application/xml" localhost:8888/v1/issue_requesters/1
 ```
-#### gRPC / Binary (HTTP2)
+#### gRPC / Binary (HTTP/2)
 ```sh
 curl localhost:8888/v1/issue_requesters/1
 ```

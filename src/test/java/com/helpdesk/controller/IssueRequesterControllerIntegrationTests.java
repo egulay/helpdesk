@@ -5,7 +5,7 @@ import com.helpdesk.RestConfiguration;
 import com.helpdesk.TestBase;
 import com.helpdesk.data.model.IssueRequesterModel;
 import lombok.val;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
