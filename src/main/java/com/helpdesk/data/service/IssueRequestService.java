@@ -2,17 +2,18 @@ package com.helpdesk.data.service;
 
 import com.helpdesk.data.model.IssueRequestModel;
 import com.helpdesk.data.repository.IssueRequestRepository;
+import com.helpdesk.data.util.ExceptionMapperUtil;
 import com.helpdesk.data.util.GenericPagedModel;
-import com.helpdesk.data.validator.IssueRequestValidator;
 import com.helpdesk.util.SortDirection;
+import jakarta.validation.ConstraintViolationException;
 import lombok.val;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Calendar;
@@ -22,13 +23,10 @@ import java.util.Date;
 @Service
 public class IssueRequestService {
     final IssueRequestRepository issueRequestRepository;
-    final IssueRequestValidator issueRequestValidator;
 
     @Autowired
-    public IssueRequestService(IssueRequestRepository issueRequestRepository,
-                               IssueRequestValidator issueRequestValidator) {
+    public IssueRequestService(IssueRequestRepository issueRequestRepository) {
         this.issueRequestRepository = issueRequestRepository;
-        this.issueRequestValidator = issueRequestValidator;
     }
 
     public IssueRequestModel findById(Integer id) {
@@ -56,8 +54,8 @@ public class IssueRequestService {
                     .content(requesters.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -83,8 +81,8 @@ public class IssueRequestService {
                     .content(requests.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -112,8 +110,8 @@ public class IssueRequestService {
                     .content(requests.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -139,8 +137,8 @@ public class IssueRequestService {
                     .content(requests.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -164,8 +162,8 @@ public class IssueRequestService {
                     .content(requests.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -194,8 +192,8 @@ public class IssueRequestService {
                     .content(requests.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -208,8 +206,8 @@ public class IssueRequestService {
 
             return issueRequestRepository.save(issueRequest);
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -217,19 +215,27 @@ public class IssueRequestService {
         try {
             return issueRequestRepository.existsById(id);
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
     public IssueRequestModel save(IssueRequestModel model) {
         try {
-            issueRequestValidator.validate(model);
+            val id = model.getId();
+            if (id == null || id <= 0) {
+                model.setId(null);
+                return issueRequestRepository.save(model);
+            }
+
+            if (!issueRequestRepository.existsById(id)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "requestId:".concat(id.toString()));
+            }
 
             return issueRequestRepository.save(model);
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -241,8 +247,8 @@ public class IssueRequestService {
 
             return requestToHardDelete;
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -251,8 +257,8 @@ public class IssueRequestService {
         try {
             issueRequestRepository.deleteAll();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
     // << WARNING: TEST PURPOSES ONLY! DO NOT IMPLEMENT AN ENDPOINT (at least for now)
@@ -267,8 +273,8 @@ public class IssueRequestService {
 
             return request.get();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -283,8 +289,8 @@ public class IssueRequestService {
 
             return request.get();
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 }

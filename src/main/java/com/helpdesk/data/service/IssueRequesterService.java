@@ -2,9 +2,10 @@ package com.helpdesk.data.service;
 
 import com.helpdesk.data.model.IssueRequesterModel;
 import com.helpdesk.data.repository.IssueRequesterRepository;
+import com.helpdesk.data.util.ExceptionMapperUtil;
 import com.helpdesk.data.util.GenericPagedModel;
-import com.helpdesk.data.validator.IssueRequesterValidator;
 import com.helpdesk.util.SortDirection;
+import jakarta.validation.ConstraintViolationException;
 import lombok.val;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,22 +14,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
-import java.util.Objects;
 
 @Service
 public class IssueRequesterService {
     final IssueRequesterRepository issueRequesterRepository;
 
-    final IssueRequesterValidator issueRequesterValidator;
 
     @Autowired
-    public IssueRequesterService(IssueRequesterRepository issueRequesterRepository,
-                                 IssueRequesterValidator issueRequesterValidator) {
+    public IssueRequesterService(IssueRequesterRepository issueRequesterRepository) {
         this.issueRequesterRepository = issueRequesterRepository;
-        this.issueRequesterValidator = issueRequesterValidator;
     }
 
     public IssueRequesterModel findById(Integer id) {
@@ -56,7 +54,7 @@ public class IssueRequesterService {
                     .content(requesters.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -81,7 +79,7 @@ public class IssueRequesterService {
                     .content(requesters.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -113,7 +111,7 @@ public class IssueRequesterService {
                     .content(requesters.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -138,7 +136,7 @@ public class IssueRequesterService {
                     .content(requesters.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -170,7 +168,7 @@ public class IssueRequesterService {
                     .content(requesters.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -202,7 +200,7 @@ public class IssueRequesterService {
                     .content(requesters.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -229,7 +227,7 @@ public class IssueRequesterService {
                     .content(requesters.getContent())
                     .build();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -242,7 +240,7 @@ public class IssueRequesterService {
 
             return issueRequesterRepository.save(requester);
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -251,25 +249,35 @@ public class IssueRequesterService {
         try {
             return issueRequesterRepository.existsByIdAndIsActive(id, isActive);
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
 
     public IssueRequesterModel save(IssueRequesterModel model) {
         try {
-            issueRequesterValidator.validate(model);
+            val id = model.getId();
 
-            if (Objects.isNull(model.getId()) && issueRequesterRepository.existsAllByEmail(model.getEmail())) {
-                throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
-                        "email:".concat(model.getEmail())
-                                .concat(",isActive:").concat(String.valueOf(model.getIsActive())));
+            if (id == null || id <= 0) {
+                model.setId(null);
+
+                if (issueRequesterRepository.existsAllByEmail(model.getEmail())) {
+                    throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
+                            "email:".concat(model.getEmail())
+                                    .concat(",isActive:").concat(String.valueOf(model.getIsActive())));
+                }
+
+                return issueRequesterRepository.save(model);
             }
 
-            return issueRequesterRepository.save(model);
+            if (!issueRequesterRepository.existsById(id)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "requesterId:".concat(id.toString()));
+            }
 
-        } catch (final DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
+            return issueRequesterRepository.save(model); // UPDATE
+
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
+            throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
@@ -281,7 +289,7 @@ public class IssueRequesterService {
 
             return requesterToHardDelete;
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -291,7 +299,7 @@ public class IssueRequesterService {
         try {
             issueRequesterRepository.deleteAll();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -308,7 +316,7 @@ public class IssueRequesterService {
 
             return requester.get();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }
@@ -324,7 +332,7 @@ public class IssueRequesterService {
 
             return requester.get();
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionUtils.getStackTrace(ex));
         }
     }

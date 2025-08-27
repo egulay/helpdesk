@@ -13,7 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -32,7 +32,10 @@ public abstract class TestBase {
     public int port;
 
     @Autowired
-    public RestTemplate restTemplate;
+    protected WebClient webClient;
+
+    @Autowired
+    protected WebClient.Builder webClientBuilder;
 
     @Autowired
     public IssueRequesterService issueRequesterService;
@@ -59,3 +62,4 @@ public abstract class TestBase {
         dynamicPropertyRegistry.add("spring.datasource.password", container::getPassword);
     }
 }
+
