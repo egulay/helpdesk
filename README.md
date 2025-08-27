@@ -176,7 +176,7 @@ spring:
   cloud:
     vault:
       enabled: true
-      uri: http://localhost:8200
+      uri: ${VAULT_ADDR}        # read vault address from env
       token: root
       kv:
         enabled: true
