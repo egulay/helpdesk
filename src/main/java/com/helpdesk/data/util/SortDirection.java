@@ -1,4 +1,4 @@
-package com.helpdesk.util;
+package com.helpdesk.data.util;
 
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;

@@ -5,7 +5,7 @@ import com.helpdesk.data.model.IssueRequesterModel;
 import com.helpdesk.data.service.IssueRequesterService;
 import com.helpdesk.data.util.GenericPagedModel;
 import com.helpdesk.protoGen.*;
-import com.helpdesk.util.SortDirection;
+import com.helpdesk.data.util.SortDirection;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;

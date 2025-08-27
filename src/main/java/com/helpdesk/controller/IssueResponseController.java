@@ -10,7 +10,7 @@ import com.helpdesk.protoGen.IssueResponse;
 import com.helpdesk.protoGen.IssueResponses;
 import com.helpdesk.protoGen.NullableInt64;
 import com.helpdesk.protoGen.PagedData;
-import com.helpdesk.util.SortDirection;
+import com.helpdesk.data.util.SortDirection;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
