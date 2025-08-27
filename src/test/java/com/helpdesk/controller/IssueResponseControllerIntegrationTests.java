@@ -7,7 +7,7 @@ import com.helpdesk.data.model.IssueRequestModel;
 import com.helpdesk.data.model.IssueRequesterModel;
 import com.helpdesk.data.model.IssueResponseModel;
 import lombok.val;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
