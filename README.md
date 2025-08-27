@@ -1,18 +1,17 @@
 # Dummy Helpdesk API
 
-## Used Technologies at a Glance
-* [Java 11](https://openjdk.java.net/projects/jdk/11/)
-* [Maven](https://maven.apache.org/)
-* [Spring Cloud](https://spring.io/projects/spring-cloud)
-* [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
-* [MySQL](https://www.mysql.com/)
-* [Hibernate ORM](https://hibernate.org/orm/)
-* [Apache Commons Lang](https://commons.apache.org/proper/commons-lang/)
-* [Google Protocol Buffers](https://developers.google.com/protocol-buffers/)
-* [Maven Protocol Buffers Plugin](https://www.xolstice.org/protobuf-maven-plugin/)
-* [JUnit](https://junit.org/junit5/)
-* [Testcontainers](https://www.testcontainers.org/modules/databases/)
-* [Lombok](https://projectlombok.org/)
+## Technologies Used
+- Java 17 – the programming language used to build the project
+- Maven – a tool to build and manage the project
+- Spring Cloud – helps connect different parts of the system
+- Spring Data JPA – makes it easier to work with databases
+- MySQL – the database used to store the data
+- Hibernate ORM – connects Java objects with database tables
+- Google Protocol Buffers – a way to exchange data in a fast and small format
+- Protobuf Maven Plugin – generates Java code from .proto files
+- JUnit 5 – used for testing the code
+- Testcontainers – runs temporary databases in Docker for tests
+- Lombok – reduces boilerplate code in Java classes
 
 ## Installation & Execution
 The solution requires up-to-date [Docker](https://www.docker.com/products/docker-desktop/) to execute all integration tests with maven surefire plugin.
@@ -28,12 +27,13 @@ docker pull mysql:8.0
 ---
 > **_NOTE:_** Protobuf compiler is required to built Java classes from .proto files located in proto directory. The definition of the protoc path is located in pom.xml's plugins section named protocExecutable like below
 ```xml
+<!-- Protobuf codegen (kept your protoc path) -->
 <plugin>
     <groupId>org.xolstice.maven.plugins</groupId>
     <artifactId>protobuf-maven-plugin</artifactId>
-    <version>0.6.1</version>
+    <version>${protobuf-maven-plugin.version}</version>
     <configuration>
-        <protocExecutable>/opt/homebrew/bin/protoc-3.21.12.0</protocExecutable>
+        <protocExecutable>/opt/homebrew/Cellar/protobuf/32.0_1/bin/protoc</protocExecutable>
     </configuration>
     <executions>
         <execution>
@@ -143,7 +143,7 @@ curl localhost:8888/v1/issue_requesters/1
 
 ### License
 The MIT License (MIT)
-Copyright © 2022
+Copyright © 2025
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

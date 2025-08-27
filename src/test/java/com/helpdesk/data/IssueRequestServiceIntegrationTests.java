@@ -27,6 +27,7 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
         newIssueRequester = issueRequesterService.save(IssueRequesterModel
                 .builder()
                 .fullName("test1_full_name")
+                .isActive(true)
                 .email(UUID.randomUUID().toString().concat("@email.com"))
                 .build());
     }
@@ -34,6 +35,7 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
     public void insertNewIssueRequest1() {
         newIssueRequest1 = issueRequestService.save(IssueRequestModel
                 .builder()
+                .isSolved(false)
                 .requester(newIssueRequester)
                 .body("Body Text 1")
                 .build());
@@ -43,6 +45,7 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
         newIssueRequest2 = issueRequestService.save(IssueRequestModel
                 .builder()
                 .requester(newIssueRequester)
+                .isSolved(false)
                 .body("Body Text 2")
                 .build());
     }
@@ -91,6 +94,7 @@ public class IssueRequestServiceIntegrationTests extends TestBase {
 
         val updated = issueRequestService.save(IssueRequestModel
                 .builder()
+                .isSolved(newIssueRequest1.getIsSolved())
                 .id(newIssueRequest1.getId())
                 .requester(newIssueRequester)
                 .body("some new body")

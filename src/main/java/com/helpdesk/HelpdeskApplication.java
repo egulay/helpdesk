@@ -8,7 +8,6 @@ import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
 @SpringBootApplication
 public class HelpdeskApplication {
-    //2.6.7
     public static void main(String[] args) {
         SpringApplication.run(HelpdeskApplication.class, args);
     }

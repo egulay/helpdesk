@@ -8,15 +8,14 @@ import lombok.val;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 public class IssueRequesterControllerIntegrationTests extends TestBase {
@@ -24,9 +23,21 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
 
     private static IssueRequesterModel newIssueRequester2;
 
+    @Before
+    public void initWebClientBaseUrl() {
+        this.webClient = this.webClientBuilder
+                .baseUrl(RestConfiguration.LOCALHOST + port)
+                .build();
+    }
+
+    private String toRelative(String url) {
+        return url.replace(RestConfiguration.LOCALHOST.concat(String.valueOf(port)), "");
+    }
+
     public void insertNewIssueRequester1() {
         newIssueRequester1 = issueRequesterService.save(IssueRequesterModel
                 .builder()
+                .isActive(true)
                 .fullName("test1 full name")
                 .email("test1c@email.com")
                 .build());
@@ -35,6 +46,7 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
     public void insertNewIssueRequester2() {
         newIssueRequester2 = issueRequesterService.save(IssueRequesterModel
                 .builder()
+                .isActive(true)
                 .fullName("test2_full_name")
                 .email("test2c@email.com")
                 .build());
@@ -68,9 +80,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/")
                 .concat(newIssueRequester1.getId().toString());
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(IssueRequester.class)
+                .block();
 
-        val response = restTemplate.getForEntity(url, IssueRequester.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -86,12 +102,16 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/")
                 .concat(String.valueOf(id));
-
         try {
-            restTemplate.getForEntity(url, IssueRequester.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
-            assertThat(ex.getMessage(), containsString(String.valueOf(id)));
+            webClient.get()
+                    .uri(toRelative(url))
+                    .retrieve()
+                    .toEntity(IssueRequester.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertThat(body).contains(String.valueOf(id));
         }
     }
 
@@ -109,9 +129,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat("?isActive=true")
                 .concat("&createdBefore=").concat(String.valueOf(tomorrow))
                 .concat("&createdAfter=").concat(String.valueOf(yesterday));
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
 
-        val response = restTemplate.getForEntity(url, PagedData.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -132,13 +156,17 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat("?isActive=false")
                 .concat("&createdBefore=").concat(String.valueOf(tomorrow))
                 .concat("&createdAfter=").concat(String.valueOf(yesterday));
-
         try {
-            restTemplate.getForEntity(url, PagedData.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
-            assertThat(ex.getMessage(), containsString(String.valueOf(yesterday)));
-            assertThat(ex.getMessage(), containsString(String.valueOf(tomorrow)));
+            webClient.get()
+                    .uri(toRelative(url))
+                    .retrieve()
+                    .toEntity(PagedData.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertThat(body).contains(String.valueOf(yesterday));
+            assertThat(body).contains(String.valueOf(tomorrow));
         }
     }
 
@@ -155,9 +183,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat("/v1/issue_requesters/find_all")
                 .concat("?createdBefore=").concat(String.valueOf(tomorrow))
                 .concat("&createdAfter=").concat(String.valueOf(yesterday));
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
 
-        val response = restTemplate.getForEntity(url, PagedData.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -177,13 +209,17 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat("/v1/issue_requesters/find_all")
                 .concat("?createdBefore=").concat(String.valueOf(tomorrow))
                 .concat("&createdAfter=").concat(String.valueOf(yesterday));
-
         try {
-            restTemplate.getForEntity(url, PagedData.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
-            assertThat(ex.getMessage(), containsString(String.valueOf(yesterday)));
-            assertThat(ex.getMessage(), containsString(String.valueOf(tomorrow)));
+            webClient.get()
+                    .uri(toRelative(url))
+                    .retrieve()
+                    .toEntity(PagedData.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertThat(body).contains(String.valueOf(yesterday));
+            assertThat(body).contains(String.valueOf(tomorrow));
         }
     }
 
@@ -195,9 +231,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val url = RestConfiguration.LOCALHOST
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/find_all");
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
 
-        val response = restTemplate.getForEntity(url, PagedData.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -209,11 +249,15 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val url = RestConfiguration.LOCALHOST
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/find_all");
-
         try {
-            restTemplate.getForEntity(url, PagedData.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
+            webClient.get()
+                    .uri(toRelative(url))
+                    .retrieve()
+                    .toEntity(PagedData.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
         }
     }
 
@@ -231,9 +275,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat("/name")
                 .concat("?createdBefore=").concat(String.valueOf(tomorrow))
                 .concat("&createdAfter=").concat(String.valueOf(yesterday));
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
 
-        val response = restTemplate.getForEntity(url, PagedData.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -254,13 +302,18 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat("/oh_noes!")
                 .concat("?createdBefore=").concat(String.valueOf(tomorrow))
                 .concat("&createdAfter=").concat(String.valueOf(yesterday));
-
         try {
-            restTemplate.getForEntity(url, PagedData.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
-            assertThat(ex.getMessage(), containsString(String.valueOf(yesterday)));
-            assertThat(ex.getMessage(), containsString(String.valueOf(tomorrow)));
+            webClient.get()
+                    .uri(toRelative(url))
+                    .retrieve()
+                    .toEntity(PagedData.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertThat(body).contains("oh_noes!");
+            assertThat(body).contains(String.valueOf(yesterday));
+            assertThat(body).contains(String.valueOf(tomorrow));
         }
     }
 
@@ -273,9 +326,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/find_all_by_full_name")
                 .concat("/name");
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
 
-        val response = restTemplate.getForEntity(url, PagedData.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -291,12 +348,16 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/find_all_by_full_name")
                 .concat("/oh_noes!");
-
         try {
-            restTemplate.getForEntity(url, PagedData.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
-            assertThat(ex.getMessage(), containsString("oh_noes!"));
+            webClient.get()
+                    .uri(toRelative(url))
+                    .retrieve()
+                    .toEntity(PagedData.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertThat(body).contains("oh_noes!");
         }
     }
 
@@ -314,8 +375,11 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat("/@email.com")
                 .concat("?createdBefore=").concat(String.valueOf(tomorrow))
                 .concat("&createdAfter=").concat(String.valueOf(yesterday));
-
-        val response = restTemplate.getForEntity(url, PagedData.class);
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
 
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
@@ -337,13 +401,18 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat("/oh_noes.com")
                 .concat("?createdBefore=").concat(String.valueOf(tomorrow))
                 .concat("&createdAfter=").concat(String.valueOf(yesterday));
-
         try {
-            restTemplate.getForEntity(url, PagedData.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
-            assertThat(ex.getMessage(), containsString(String.valueOf(yesterday)));
-            assertThat(ex.getMessage(), containsString(String.valueOf(tomorrow)));
+            webClient.get()
+                    .uri(toRelative(url))
+                    .retrieve()
+                    .toEntity(PagedData.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertThat(body).contains("oh_noes.com");
+            assertThat(body).contains(String.valueOf(yesterday));
+            assertThat(body).contains(String.valueOf(tomorrow));
         }
     }
 
@@ -356,9 +425,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/find_all_by_email")
                 .concat("/@email.com");
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
 
-        val response = restTemplate.getForEntity(url, PagedData.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -374,12 +447,16 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/find_all_by_email")
                 .concat("/@oh_noes.com");
-
         try {
-            restTemplate.getForEntity(url, PagedData.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
-            assertThat(ex.getMessage(), containsString("@oh_noes.com"));
+            webClient.get()
+                    .uri(toRelative(url))
+                    .retrieve()
+                    .toEntity(PagedData.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertThat(body).contains("@oh_noes.com");
         }
     }
 
@@ -392,10 +469,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/toggle_activation/")
                 .concat(String.valueOf(newIssueRequester1.getId()));
+        val response = webClient.put()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(IssueRequester.class)
+                .block();
 
-        val response = restTemplate.exchange(url,
-                HttpMethod.PUT, null, IssueRequester.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -411,10 +491,13 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/delete/")
                 .concat(newIssueRequester1.getId().toString());
+        val response = webClient.delete()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(IssueRequester.class)
+                .block();
 
-        val response = restTemplate.exchange(url,
-                HttpMethod.DELETE, null, IssueRequester.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
         assertEquals(String.valueOf(response.getBody().getId()), (newIssueRequester1.getId().toString()));
@@ -422,8 +505,8 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         try {
             issueRequesterService.findById(response.getBody().getId());
         } catch (final ResponseStatusException ex) {
-            assertThat(ex.getMessage(), containsString("404"));
-            assertThat(ex.getMessage(), containsString(String.valueOf(response.getBody().getId())));
+            assertThat(ex.getMessage()).contains("404");
+            assertThat(ex.getMessage()).contains(String.valueOf(response.getBody().getId()));
         }
     }
 
@@ -438,9 +521,12 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val url = RestConfiguration.LOCALHOST
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/save");
-
-        val response = restTemplate.postForEntity(url,
-                new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
+        val response = webClient.post()
+                .uri(toRelative(url))
+                .bodyValue(issueRequesterToPost)
+                .retrieve()
+                .toEntity(IssueRequester.class)
+                .block();
 
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
@@ -458,6 +544,7 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
     public void insert_issue_requester_with_exception_test() {
         val issueRequesterToPost = IssueRequester
                 .newBuilder()
+                .setIsActive(NullableBoolean.newBuilder().setData(true).build())
                 .setFullName("   ")
                 .setEmail("hede@hodo.com")
                 .build();
@@ -465,34 +552,17 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val url = RestConfiguration.LOCALHOST
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/save");
-
         try {
-            restTemplate.postForEntity(url,
-                    new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("400"));
-            assertThat(ex.getMessage(), containsString("must not be empty"));
-        }
-    }
-
-    @Test
-    public void insert_issue_requester_with_exception_test_2() {
-        val issueRequesterToPost = IssueRequester
-                .newBuilder()
-                .setFullName("   ")
-                .setEmail("hede@hodo.com")
-                .build();
-
-        val url = RestConfiguration.LOCALHOST
-                .concat(String.valueOf(port))
-                .concat("/v1/issue_requesters/save");
-
-        try {
-            restTemplate.postForEntity(url,
-                    new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("400"));
-            assertThat(ex.getMessage(), containsString("must not be empty"));
+            webClient.post()
+                    .uri(toRelative(url))
+                    .bodyValue(issueRequesterToPost)
+                    .retrieve()
+                    .toEntity(IssueRequester.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.BAD_REQUEST.value(), ex.getRawStatusCode());
+            assertThat(body).contains("must not be blank");
         }
     }
 
@@ -501,6 +571,7 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val email = "hede@hodo";
         val issueRequesterToPost = IssueRequester
                 .newBuilder()
+                .setIsActive(NullableBoolean.newBuilder().setData(true).build())
                 .setFullName("Abuzer Kadayif")
                 .setEmail(email)
                 .build();
@@ -508,13 +579,17 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val url = RestConfiguration.LOCALHOST
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/save");
-
         try {
-            restTemplate.postForEntity(url,
-                    new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("400"));
-            assertThat(ex.getMessage(), containsString(email));
+            webClient.post()
+                    .uri(toRelative(url))
+                    .bodyValue(issueRequesterToPost)
+                    .retrieve()
+                    .toEntity(IssueRequester.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.BAD_REQUEST.value(), ex.getRawStatusCode());
+            assertThat(body).contains(email);
         }
     }
 
@@ -525,6 +600,7 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val issueRequesterToPost = IssueRequester
                 .newBuilder()
                 .setId(newIssueRequester1.getId())
+                .setIsActive(NullableBoolean.newBuilder().setData(true).build())
                 .setFullName("Hebee Bidi")
                 .setEmail("hebee@hodo.net")
                 .build();
@@ -532,10 +608,14 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val url = RestConfiguration.LOCALHOST
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/save");
+        val response = webClient.post()
+                .uri(toRelative(url))
+                .bodyValue(issueRequesterToPost)
+                .retrieve()
+                .toEntity(IssueRequester.class)
+                .block();
 
-        val response = restTemplate.postForEntity(url,
-                new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
-
+        assertNotNull(response);
         assertTrue(StringUtils.isNotBlank(response.toString()));
         assertNotNull(response.getBody());
 
@@ -551,6 +631,7 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
         val issueRequesterToPost = IssueRequester
                 .newBuilder()
                 .setId(newIssueRequester1.getId())
+                .setIsActive(NullableBoolean.newBuilder().setData(true).build())
                 .setFullName("Hede Hodo")
                 .setEmail(email)
                 .build();
@@ -559,11 +640,16 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .concat(String.valueOf(port))
                 .concat("/v1/issue_requesters/save");
         try {
-            restTemplate.postForEntity(url,
-                    new HttpEntity<>(issueRequesterToPost), IssueRequester.class);
-        } catch (final HttpClientErrorException ex) {
-            assertThat(ex.getMessage(), containsString("400"));
-            assertThat(ex.getMessage(), containsString(email));
+            webClient.post()
+                    .uri(toRelative(url))
+                    .bodyValue(issueRequesterToPost)
+                    .retrieve()
+                    .toEntity(IssueRequester.class)
+                    .block();
+        } catch (final WebClientResponseException ex) {
+            final String body = ex.getResponseBodyAsString();
+            assertEquals(HttpStatus.BAD_REQUEST.value(), ex.getRawStatusCode());
+            assertThat(body).contains(email);
         }
     }
 }

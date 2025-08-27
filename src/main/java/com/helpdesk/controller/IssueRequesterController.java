@@ -181,6 +181,7 @@ public class IssueRequesterController {
         val saved = issueRequesterService.save(IssueRequesterModel
                 .builder()
                 .id(issueRequester.getId())
+                .isActive(issueRequester.getIsActive().getData())
                 .fullName(issueRequester.getFullName())
                 .email(issueRequester.getEmail())
                 .build());

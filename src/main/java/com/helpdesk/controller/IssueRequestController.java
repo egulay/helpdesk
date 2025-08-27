@@ -189,6 +189,7 @@ public class IssueRequestController {
         val saved = issueRequestService.save(IssueRequestModel
                 .builder()
                 .id(issueRequest.getId())
+                .isSolved(issueRequest.getIsSolved().getData())
                 .requester(requester)
                 .body(issueRequest.getBody())
                 .build());

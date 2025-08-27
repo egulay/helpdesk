@@ -23,6 +23,7 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
     public void insertNewIssueRequester1() {
         newIssueRequester1 = issueRequesterService.save(IssueRequesterModel
                 .builder()
+                .isActive(true)
                 .fullName("test1_full_name")
                 .email("test1@email.com")
                 .build());
@@ -32,6 +33,7 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
         newIssueRequester2 = issueRequesterService.save(IssueRequesterModel
                 .builder()
                 .fullName("test2_full_name")
+                .isActive(true)
                 .email("test2@email.com")
                 .build());
     }
@@ -75,6 +77,7 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
         val updated = issueRequesterService.save(IssueRequesterModel
                 .builder()
                 .id(newIssueRequester1.getId())
+                .isActive(true)
                 .fullName("new full name")
                 .email("new@email.net")
                 .build());

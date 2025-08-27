@@ -30,6 +30,7 @@ public class IssueResponseServiceIntegrationTests extends TestBase {
         newIssueRequester = issueRequesterService.save(IssueRequesterModel
                 .builder()
                 .fullName("test1_full_name")
+                .isActive(true)
                 .email(UUID.randomUUID().toString().concat("@email.com"))
                 .build());
     }
@@ -37,6 +38,7 @@ public class IssueResponseServiceIntegrationTests extends TestBase {
     public void insertNewIssueRequest() {
         newIssueRequest = issueRequestService.save(IssueRequestModel
                 .builder()
+                .isSolved(false)
                 .requester(newIssueRequester)
                 .body("Body Text 1")
                 .build());

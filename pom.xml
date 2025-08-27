@@ -1,42 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.7</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>3.5.5</version>
+        <relativePath/>
     </parent>
+
     <groupId>com.helpdesk</groupId>
     <artifactId>helpdesk</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>helpdesk</name>
     <description>helpdesk</description>
+
     <properties>
-        <java.version>11</java.version>
-        <spring-cloud.version>2021.0.2</spring-cloud.version>
-        <os-maven-plugin.version>1.6.1</os-maven-plugin.version>
+        <java.version>17</java.version>
 
-        <protobuf-java-format.version>1.4</protobuf-java-format.version>
-        <protobuf-java.version>4.28.2</protobuf-java.version>
-        <google-api-client.version>2.7.0</google-api-client.version>
-        <proto-google-common-protos.version>2.46.0</proto-google-common-protos.version>
-        <grpc-core.version>1.68.0</grpc-core.version>
-        <proto-google-common-protos.version>2.46.0</proto-google-common-protos.version>
-        <protobuf-java-util.version>3.20.1</protobuf-java-util.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <testcontainers.version>1.21.3</testcontainers.version>
 
-        <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
+        <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
-        <junit.version>4.12</junit.version>
-        <junit-vintage-engine.version>5.4.0</junit-vintage-engine.version>
-        <grpc-testing.version>1.46.0</grpc-testing.version>
-        <testcontainers.version>1.17.1</testcontainers.version>
-        <maven-surefire-plugin.version>3.0.0-M6</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
 
-        <commons-lang3.version>3.12.0</commons-lang3.version>
-        <springdoc-openapi-webmvc-core.version>1.6.8</springdoc-openapi-webmvc-core.version>
+        <google-api-client.version>2.8.1</google-api-client.version>
+        <proto-google-common-protos.version>2.61.0</proto-google-common-protos.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-bom</artifactId>
+                <version>1.75.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-bom</artifactId>
+                <version>4.32.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -51,6 +81,11 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
@@ -58,6 +93,7 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
@@ -68,8 +104,8 @@
         </dependency>
 
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -80,14 +116,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.googlecode.protobuf-java-format</groupId>
-            <artifactId>protobuf-java-format</artifactId>
-            <version>${protobuf-java-format.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>${protobuf-java.version}</version>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>proto-google-common-protos</artifactId>
+            <version>${proto-google-common-protos.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.api-client</groupId>
@@ -95,42 +126,44 @@
             <version>${google-api-client.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.google.api.grpc</groupId>
-            <artifactId>proto-google-common-protos</artifactId>
-            <version>${proto-google-common-protos.version}</version>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-core</artifactId>
-            <version>${grpc-core.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.google.api.grpc</groupId>-->
-<!--            <artifactId>proto-google-common-protos</artifactId>-->
-<!--            <version>${proto-google-common-protos.version}</version>-->
-<!--        </dependency>-->
+
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-            <version>${protobuf-java-util.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.11</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
+            <version>3.18.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-webmvc-core</artifactId>
-            <version>${springdoc-openapi-webmvc-core.version}</version>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.26.3</version>
+            <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-testing</artifactId>
-            <version>${grpc-testing.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -149,24 +182,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>${testcontainers.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <extensions>
@@ -177,12 +192,13 @@
             </extension>
         </extensions>
         <plugins>
+            <!-- Protobuf codegen (kept your protoc path) -->
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.1</version>
+                <version>${protobuf-maven-plugin.version}</version>
                 <configuration>
-                    <protocExecutable>/opt/homebrew/Cellar/protobuf/28.2/bin/protoc</protocExecutable>
+                    <protocExecutable>/opt/homebrew/Cellar/protobuf/32.0_1/bin/protoc</protocExecutable>
                 </configuration>
                 <executions>
                     <execution>
@@ -193,18 +209,13 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.junit.vintage</groupId>
-                        <artifactId>junit-vintage-engine</artifactId>
-                        <version>${junit-vintage-engine.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
