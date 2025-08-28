@@ -5,8 +5,7 @@ CREATE
 DATABASE help_desk
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_0900_ai_ci;
-USE
-help_desk;
+USE help_desk;
 
 DROP TABLE IF EXISTS issue_response;
 DROP TABLE IF EXISTS issue_request;
