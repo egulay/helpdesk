@@ -17,9 +17,9 @@
 ## Installation & Execution
 You need the latest [Docker Desktop](https://www.docker.com/products/docker-desktop/) to run integration tests with the Maven Surefire plugin.
 ### Base [Docker](https://www.docker.com/products/docker-desktop/) Images for Integration Tests
-* #### Testcontainers version 0.3.3
+* #### Testcontainers version 0.12.0
 ```sh
-docker pull testcontainers/ryuk:0.3.3
+docker pull testcontainers/ryuk:0.12.0
 ```
 * #### MySQL version 8.0
 ```sh
@@ -29,7 +29,7 @@ docker pull mysql:8.0
 > **_NOTE:_** The Protobuf compiler is required to build Java classes from the ".proto" files in the 
 proto directory. The path to protoc is set in the pom.xml plugin configuration (see protocExecutable), for example:
 ```xml
-<!-- Protobuf codegen (kept your protoc path) -->
+<!-- Protobuf codegen (this script uses your protoc path) -->
 <plugin>
     <groupId>org.xolstice.maven.plugins</groupId>
     <artifactId>protobuf-maven-plugin</artifactId>
@@ -51,7 +51,7 @@ proto directory. The path to protoc is set in the pom.xml plugin configuration (
 ```sh
 ./build.sh
 ```
-* This command add necessary environment variables, generates Java sources from the proto directory, runs the tests, and compiles the project.
+* The build.sh script pulls and starts MySQL, executes the DDL and seeds some data, pulls and starts Vault, creates the necessary secret, then generates Java sources from the proto directory, runs the tests, and compiles the project.
 
 ### Development Mode Guide
 #### 1) Run MySQL 8 (Docker)
@@ -172,11 +172,11 @@ spring:
   application:
     name: helpdesk
   config:
-    import: optional:vault://   # read config from Vault at startup
+    import: optional:vault://   # reads config from Vault at startup
   cloud:
     vault:
       enabled: true
-      uri: ${VAULT_ADDR}        # read vault address from env
+      uri: ${VAULT_ADDR}        # reads Vault address from environment variable
       token: root
       kv:
         enabled: true
@@ -186,8 +186,13 @@ spring:
 
 #### 8) Start the API
 ```sh
-java -jar target/helpdesk-0.0.1-SNAPSHOT.jar
+./run.sh
 ```
+
+The run.sh script:
+- Checks if the Vault secret secret/helpdesk exists and creates it if missing.
+- Prints the Vault secret to confirm values.
+- Runs the Spring Boot application with mvn spring-boot:run.
 ### Open API Documentation (in JSON)
 ```sh
 curl localhost:8888/api-docs
@@ -216,6 +221,3 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-
