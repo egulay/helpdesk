@@ -49,9 +49,9 @@ proto directory. The path to protoc is set in the pom.xml plugin configuration (
 ```
 ### Building the Project
 ```sh
-mvn clean install
+./build.sh
 ```
-* This command generates Java sources from the proto directory, runs the tests, and compiles the project.
+* This command add necessary environment variables, generates Java sources from the proto directory, runs the tests, and compiles the project.
 
 ### Development Mode Guide
 #### 1) Run MySQL 8 (Docker)
