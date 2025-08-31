@@ -177,7 +177,7 @@ spring:
     vault:
       enabled: true
       uri: ${VAULT_ADDR}        # reads Vault address from environment variable
-      token: root
+      token: ${VAULT_TOKEN}
       kv:
         enabled: true
         backend: secret
