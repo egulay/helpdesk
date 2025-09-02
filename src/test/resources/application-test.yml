@@ -4,7 +4,7 @@ spring:
     hibernate:
       ddl-auto: none
   cloud:
-    discovery:
+    vault:
       enabled: false
 springdoc:
   api-docs:
