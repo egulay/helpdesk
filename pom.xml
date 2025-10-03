@@ -29,6 +29,7 @@
 
         <google-api-client.version>2.8.1</google-api-client.version>
         <proto-google-common-protos.version>2.61.0</proto-google-common-protos.version>
+        <protobuf.version>4.32.1</protobuf.version>
     </properties>
 
     <dependencyManagement>
@@ -52,9 +53,20 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-bom</artifactId>
-                <version>4.32.0</version>
+                <version>${protobuf.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf.version}</version>
             </dependency>
 
             <dependency>
@@ -199,7 +211,7 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>${protobuf-maven-plugin.version}</version>
                 <configuration>
-                    <protocExecutable>/opt/homebrew/Cellar/protobuf/32.0_1/bin/protoc</protocExecutable>
+                    <protocExecutable>/opt/homebrew/Cellar/protobuf/32.1/bin/protoc</protocExecutable>
                 </configuration>
                 <executions>
                     <execution>
