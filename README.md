@@ -148,12 +148,16 @@ export VAULT_TOKEN=root
 #### 6) Save your DB settings into Vault (KV v2)
 It stores the properties with the same keys Spring uses. Spring will read them directly from `secret/helpdesk`.
 ```bash
-docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault \
+docker exec \
+  -e VAULT_ADDR=http://127.0.0.1:8200 \
+  -e VAULT_TOKEN=root \
+  vault \
   vault kv put secret/helpdesk \
-    spring.datasource.url="jdbc:mysql://localhost:3306/help_desk?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
+    spring.datasource.url="jdbc:mysql://127.0.0.1:3306/help_desk?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
     spring.datasource.username="help_user" \
     spring.datasource.password="help_pass" \
     spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
+    spring.jpa.properties.hibernate.dialect="org.hibernate.dialect.MySQLDialect" \
     spring.datasource.hikari.auto-commit="false" \
     spring.datasource.hikari.transaction-isolation="TRANSACTION_READ_COMMITTED" \
     spring.datasource.hikari.minimum-idle="2" \
