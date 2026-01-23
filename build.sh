@@ -138,17 +138,18 @@ fi
 
 sleep 2
 
-VAULT_EXEC=(docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=${VAULT_TOKEN} "${VAULT_CONTAINER}" vault)
+VAULT_EXEC=(docker exec -e VAULT_ADDR="http://127.0.0.1:${VAULT_PORT}" -e VAULT_TOKEN="${VAULT_TOKEN}" "${VAULT_CONTAINER}" vault)
 
 if "${VAULT_EXEC[@]}" kv get -format=json "${SECRET_PATH}" >/dev/null 2>&1; then
   echo "Vault secret '${SECRET_PATH}' already exists."
 else
   echo "Creating Vault secret '${SECRET_PATH}' with datasource values..."
   "${VAULT_EXEC[@]}" kv put "${SECRET_PATH}" \
-    spring.datasource.url="jdbc:mysql://localhost:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
+    spring.datasource.url="jdbc:mysql://127.0.0.1:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
     spring.datasource.username="${MYSQL_USER}" \
     spring.datasource.password="${MYSQL_PASSWORD}" \
     spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
+    spring.jpa.properties.hibernate.dialect="org.hibernate.dialect.MySQLDialect" \
     spring.datasource.hikari.auto-commit="false" \
     spring.datasource.hikari.transaction-isolation="TRANSACTION_READ_COMMITTED" \
     spring.datasource.hikari.minimum-idle="2" \
