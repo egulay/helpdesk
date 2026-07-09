@@ -213,7 +213,9 @@ docker exec \
   vault \
   vault kv patch secret/helpdesk \
     helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" \
-    helpdesk.ai.openai.model="${OPENAI_MODEL}"
+    helpdesk.ai.openai.model="${OPENAI_MODEL}" \
+    spring.ai.openai.api-key="${OPENAI_API_KEY}" \
+    spring.ai.openai.chat.options.model="${OPENAI_MODEL}"
 ```
 
 Check the secret:
@@ -254,10 +256,11 @@ The run.sh script:
 - Prints the Vault secret to confirm values.
 - Runs the Spring Boot application with `mvn spring-boot:run`.
 
-
 ## MCP Support
 
-This project includes an embedded MCP server inside the same Spring Boot application that already serves REST and gRPC-style endpoints. This makes the application a hybrid API:
+This project includes an embedded Spring AI MCP server in the same Spring Boot application that already serves the REST and gRPC-style endpoints.
+
+The MCP layer acts as a third adapter over the existing service layer:
 
 ```text
 REST / JSON / XML API
@@ -265,218 +268,45 @@ gRPC-style binary API
 MCP tool server
 ```
 
-The MCP layer does not replace the existing REST or gRPC APIs. It adds a third adapter that allows AI clients and agents to call selected backend capabilities as tools.
+MCP does not replace the normal API. It exposes selected backend capabilities as tools so MCP-compatible AI clients can discover and invoke them.
 
-### Why MCP Is Useful Here
-
-Traditional REST and gRPC endpoints are designed for direct application-to-application calls. MCP exposes backend capabilities in a tool-oriented format so an AI client can:
-
-- search helpdesk requesters,
-- search issue requests,
-- search issue responses,
-- inspect ticket history,
-- summarize a ticket,
-- suggest a support response,
-- combine multiple backend calls into a higher-level assistant workflow.
-
-This is useful because the business logic remains in the existing service layer, while MCP simply exposes that logic in a model-friendly way.
-
-### MCP Package Structure
+The implementation follows a simple rule:
 
 ```text
-com.helpdesk.mcp.ai
-  AiService
-  HelpdeskAssistantTools
-  OpenAiService
-
-com.helpdesk.mcp.assistant
-  HelpdeskAssistanceFacade
-  HelpdeskContextBuilder
-  HelpdeskPromptService
-  HelpdeskTicketContext
-
-com.helpdesk.mcp.config
-  McpToolConfiguration
-  OpenAiConfiguration
-
-com.helpdesk.mcp.tool
-  IssueRequesterTool
-  IssueRequestTool
-  IssueResponseTool
-
-com.helpdesk.mcp.util
-  McpDateParser
+MCP Tool -> Existing Service Layer -> Repository -> Database
 ```
 
-### MCP Data Tools
+For AI-assisted operations, the MCP layer can also build a ticket context, apply a system/default prompt, and call the configured OpenAI model. The OpenAI API key and model are loaded from Vault, not hardcoded in the source code.
 
-The classes under `com.helpdesk.mcp.tool` are thin adapters over the existing data services.
+MCP tools return JSON-friendly DTO/record objects instead of JPA model classes. This keeps tool responses simple and avoids serialization problems when external MCP clients call the server.
 
-```text
-IssueRequesterTool  -> IssueRequesterService
-IssueRequestTool    -> IssueRequestService
-IssueResponseTool   -> IssueResponseService
-```
+### Testing the Embedded MCP Server
 
-These classes should not contain business logic. Their responsibility is to expose existing service methods as MCP tools.
-
-Examples of MCP data tool operations:
-
-- find issue requester by id,
-- find issue requester by email,
-- find issue requests by requester id,
-- find issue requests by created date range,
-- find issue responses by request id,
-- save or update issue records,
-- mark issue request as solved.
-
-This keeps the architecture clean:
-
-```text
-MCP Tool -> Existing Data Service -> Repository -> Database
-```
-
-### MCP Assistant Layer
-
-The assistant package contains AI-oriented orchestration logic. It is separate from the CRUD/data tools.
-
-```text
-HelpdeskAssistantTools
-  -> HelpdeskAssistanceFacade
-      -> HelpdeskContextBuilder
-      -> HelpdeskPromptService
-      -> AiService
-```
-
-The assistant layer is used for higher-level AI operations that do not exist as normal CRUD endpoints.
-
-Examples:
-
-- summarize an issue request,
-- suggest a professional support response,
-- build a ticket context from request + requester + responses,
-- apply a default system prompt,
-- call OpenAI using the configured API key.
-
-### Context Builder
-
-`HelpdeskContextBuilder` prepares the data needed for AI workflows. For example, to summarize a ticket, the assistant needs:
-
-- the issue request,
-- the requester,
-- all related responses.
-
-Instead of putting that composition logic into the MCP tool class, the project keeps it in the context builder.
-
-```text
-HelpdeskContextBuilder
-  -> IssueRequestService
-  -> IssueRequesterService
-  -> IssueResponseService
-```
-
-### Prompt Service
-
-`HelpdeskPromptService` centralizes default and system prompts.
-
-This keeps prompts out of data services and out of tool classes.
-
-Typical prompt responsibilities:
-
-- default system prompt,
-- summarization prompt,
-- response suggestion prompt,
-- rules such as “do not invent missing information”.
-
-This design allows prompt changes without modifying the data services.
-
-### AI Service Abstraction
-
-`AiService` is an interface for model calls.
-
-`OpenAiService` is the current implementation using the OpenAI Java SDK.
-
-```text
-AiService
-  -> OpenAiService
-```
-
-This makes the project easier to extend later. For example, future implementations could support:
-
-- Azure OpenAI,
-- Anthropic,
-- local models,
-- mock AI service for tests.
-
-### OpenAI Configuration
-
-`OpenAiConfiguration` creates the OpenAI client bean. The API key is loaded from Vault through Spring configuration, not hardcoded in source code.
-
-Expected Vault properties:
-
-```properties
-helpdesk.ai.openai.api-key=your-openai-api-key
-helpdesk.ai.openai.model=gpt-5.2
-```
-
-The OpenAI API key must not be committed to Git.
-
-### Date Parsing
-
-`McpDateParser` converts string date parameters received by MCP tools into Java `Date` values expected by the existing service layer.
-
-The expected format is an ISO-8601 instant:
-
-```text
-2026-07-09T00:00:00Z
-```
-
-This is used by tool methods that query data by created or solved date ranges.
-
-### MCP Configuration
-
-`McpToolConfiguration` registers MCP tool classes with Spring AI.
-
-It exposes both data tools and assistant tools:
-
-```text
-IssueRequesterTool
-IssueRequestTool
-IssueResponseTool
-HelpdeskAssistantTools
-```
-
-This allows an MCP-compatible client to discover and call these tools.
-
-### Design Rule
-
-The project follows this separation:
-
-```text
-Simple data operation:
-MCP Tool -> Existing Data Service
-
-AI-assisted operation:
-MCP Assistant Tool -> Assistant Facade -> Context Builder + Prompt Service + AiService
-```
-
-This prevents the MCP layer from duplicating business logic and keeps AI-specific behavior isolated.
-
-
-
-## Testing the Embedded MCP Server
-
-The project embeds a Spring AI MCP server using the SSE transport. This allows any MCP-compatible client to discover and invoke the registered tools.
-
-### Verify the MCP Server
-
-Start the application:
+Start the application first:
 
 ```bash
 ./run.sh
 ```
 
-Open an SSE connection:
+Then, in another terminal, run:
+
+```bash
+./test-mcp.sh
+```
+
+The `test-mcp.sh` script verifies the MCP SSE flow:
+
+```text
+SSE connection
+    ↓
+initialize
+    ↓
+notifications/initialized
+    ↓
+tools/list
+```
+
+A successful manual SSE check looks like this:
 
 ```bash
 curl -N \
@@ -484,56 +314,21 @@ curl -N \
   http://localhost:8888/sse
 ```
 
-A successful response looks similar to:
+Expected response:
 
 ```text
-id:4453f025-ff9d-45cb-b3c5-134c7369eafd
 event:endpoint
-data:/mcp/message?sessionId=4453f025-ff9d-45cb-b3c5-134c7369eafd
+data:/mcp/message?sessionId=<session-id>
 ```
 
-The `sessionId` is then used for all subsequent MCP requests.
-
-### Automated Test Script
-
-A helper script (`test-mcp.sh`) can be used after `./run.sh` to verify the complete MCP handshake automatically.
-
-The script performs:
-
-1. Opens the SSE connection.
-2. Waits for the generated session identifier.
-3. Sends the `initialize` request.
-4. Sends the `notifications/initialized` notification.
-5. Executes `tools/list`.
-6. Prints all responses received from the server.
-
-Run it with:
-
-```bash
-./test-mcp.sh
-```
-
-### Expected Result
-
-The output should contain the MCP protocol messages followed by the registered tool list.
-
-Typical flow:
+Useful MCP endpoints:
 
 ```text
-SSE Connection
-    ↓
-initialize
-    ↓
-notifications/initialized
-    ↓
-tools/list
-    ↓
-tools/call
+GET  /sse
+POST /mcp/message?sessionId=<session-id>
 ```
 
-### Debugging
-
-If the server starts but no tools are returned, enable debug logging:
+If tools are not returned, enable debug logging:
 
 ```yaml
 logging:
@@ -542,14 +337,43 @@ logging:
     io.modelcontextprotocol: DEBUG
 ```
 
-Useful endpoints:
+MCP can also be tested from external clients such as MCP Inspector or Claude Desktop.
 
-```text
-GET  /sse
-POST /mcp/message?sessionId=<session-id>
+
+## Claude Desktop (MCP Client)
+
+The embedded MCP server can also be tested interactively with Claude Desktop.
+
+Start the application first:
+
+```bash
+./run.sh
 ```
 
-The embedded MCP server registers both CRUD-oriented data tools and higher-level AI assistant tools. Any MCP-compatible client (for example MCP Inspector, Claude Desktop with MCP support, or a custom Java client) can discover and invoke them.
+Then configure Claude Desktop by editing:
+
+```text
+~/Library/Application Support/Claude/claude_desktop_config.json
+```
+
+Example configuration:
+
+```json
+{
+  "mcpServers": {
+    "helpdesk": {
+      "command": "/opt/homebrew/bin/npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "http://localhost:8888/sse"
+      ]
+    }
+  }
+}
+```
+
+After saving the configuration, completely restart Claude Desktop. The Helpdesk MCP tools will be discovered automatically and can then be invoked through natural-language questions.
 
 
 ## Open API Documentation (in JSON)
