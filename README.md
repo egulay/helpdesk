@@ -306,39 +306,7 @@ notifications/initialized
 tools/list
 ```
 
-A successful manual SSE check looks like this:
-
-```bash
-curl -N \
-  -H "Accept: text/event-stream" \
-  http://localhost:8888/sse
-```
-
-Expected response:
-
-```text
-event:endpoint
-data:/mcp/message?sessionId=<session-id>
-```
-
-Useful MCP endpoints:
-
-```text
-GET  /sse
-POST /mcp/message?sessionId=<session-id>
-```
-
-If tools are not returned, enable debug logging:
-
-```yaml
-logging:
-  level:
-    org.springframework.ai.mcp: DEBUG
-    io.modelcontextprotocol: DEBUG
-```
-
 MCP can also be tested from external clients such as MCP Inspector or Claude Desktop.
-
 
 ## Claude Desktop (MCP Client)
 

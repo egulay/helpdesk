@@ -4,7 +4,8 @@ public record IssueRequestToolRequest(
         Integer id,
         Integer requesterId,
         String requestBody,
-        Boolean isSolved
+        Boolean isSolved,
+        String solved
 ) {
 
 }

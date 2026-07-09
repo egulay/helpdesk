@@ -165,6 +165,7 @@ public class IssueRequestTools {
                 .requester(issueRequesterService.findById(request.requesterId()))
                 .body(request.requestBody())
                 .isSolved(request.isSolved())
+                .solved(request.solved() == null ? null : McpDateParser.fromIsoInstant(request.solved()))
                 .build();
     }
 
