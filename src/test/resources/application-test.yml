@@ -9,8 +9,3 @@ spring:
 springdoc:
   api-docs:
     enabled: false
-
-eureka:
-  client:
-    enabled: false
-    register-with-eureka: false
