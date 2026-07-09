@@ -374,8 +374,9 @@ Example configuration:
 ```
 After saving the configuration, completely restart Claude Desktop. The Helpdesk MCP tools will be discovered automatically and can then be invoked through natural-language questions.
 ![Local MCP Servers Screen Capture](local-mcp-servers.png)
-
-![Local MCP Test](local-mcp-test.png)
+![Local MCP Test](local-mcp-test-2.png)
+![Local MCP Test 2](local-mcp-test.png)
+![Local MCP Test 3](local-mcp-test-3.png)
 
 ## Open API Documentation (in JSON)
 ```sh
