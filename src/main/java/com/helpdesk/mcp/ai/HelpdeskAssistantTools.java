@@ -1,19 +1,3 @@
-/// AI orchestrator
-/// Fully LLM related tasks could be here to improve the functionalit, not the CRUD - such as:
-/// summarizeIssue()
-/// suggestResponse()
-/// classifyIssuePriority()
-/// estimateIssueCategory()
-/// findSimilarIssues()
-/// generateRequesterSummary()
-/// generateIssueTimeline()
-/// detectDuplicateIssue()
-/// explainIssue()
-/// createEscalationSummary()
-/// generateKnowledgeBaseArticle()
-/// translateResponse()
-/// rewriteResponse()
-/// generateManagerSummary()
 package com.helpdesk.mcp.ai;
 
 import com.helpdesk.mcp.assistant.HelpdeskAssistantFacade;
@@ -35,5 +19,30 @@ public class HelpdeskAssistantTools {
     @Tool(description = "Suggest a professional support response for an issue request")
     public String suggestIssueResponse(Integer requestId) {
         return facade.suggestIssueResponse(requestId);
+    }
+
+    @Tool(description = "Classify the priority of an issue request as LOW, MEDIUM, HIGH, or CRITICAL")
+    public String classifyIssuePriority(Integer requestId) {
+        return facade.classifyIssuePriority(requestId);
+    }
+
+    @Tool(description = "Estimate the category of an issue request, such as Access, Hardware, Software, Network, Account, Data, or Other")
+    public String estimateIssueCategory(Integer requestId) {
+        return facade.estimateIssueCategory(requestId);
+    }
+
+    @Tool(description = "Generate a chronological timeline for an issue request")
+    public String generateIssueTimeline(Integer requestId) {
+        return facade.generateIssueTimeline(requestId);
+    }
+
+    @Tool(description = "Create an escalation summary for an issue request")
+    public String createEscalationSummary(Integer requestId) {
+        return facade.createEscalationSummary(requestId);
+    }
+
+    @Tool(description = "Generate a draft knowledge base article from an issue request")
+    public String generateKnowledgeBaseArticle(Integer requestId) {
+        return facade.generateKnowledgeBaseArticle(requestId);
     }
 }
