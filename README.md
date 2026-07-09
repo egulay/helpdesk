@@ -377,6 +377,8 @@ After saving the configuration, completely restart Claude Desktop. The Helpdesk 
 ![Local MCP Test](local-mcp-test-2.png)
 ![Local MCP Test 2](local-mcp-test.png)
 ![Local MCP Test 3](local-mcp-test-3.png)
+### Database entries (Responses)
+![Local MCP Test DB](local-mcp-test-db.png)
 
 ## Open API Documentation (in JSON)
 ```sh
