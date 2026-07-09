@@ -19,13 +19,12 @@ export VAULT_TOKEN=${VAULT_TOKEN:-root}
 
 SECRET_PATH=${SECRET_PATH:-secret/helpdesk}
 
-
- if [[ "${RESET_DB:-false}" == "true" ]]; then
-   if docker ps -a --format '{{.Names}}' | grep -q "^${MYSQL_CONTAINER}$"; then
-     echo "RESET_DB=true -> removing existing MySQL container and volumes (${MYSQL_CONTAINER})"
-     docker rm -fv "${MYSQL_CONTAINER}" >/dev/null || true
-   fi
- fi
+if [[ "${RESET_DB:-false}" == "true" ]]; then
+  if docker ps -a --format '{{.Names}}' | grep -q "^${MYSQL_CONTAINER}$"; then
+    echo "RESET_DB=true -> removing existing MySQL container and volumes (${MYSQL_CONTAINER})"
+    docker rm -fv "${MYSQL_CONTAINER}" >/dev/null || true
+  fi
+fi
 
 if ! docker ps --format '{{.Names}}' | grep -q "^${MYSQL_CONTAINER}$"; then
   if docker ps -a --format '{{.Names}}' | grep -q "^${MYSQL_CONTAINER}$"; then
@@ -107,7 +106,6 @@ if ! docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -u\"${MYSQL_USER}\" -p\"${
   fi
 fi
 
-
 SEED_PATH=./src/test/resources/seed-data.sql
 if [[ -f "${SEED_PATH}" ]]; then
   echo "Copying seed data into MySQL container and executing..."
@@ -155,6 +153,15 @@ else
     spring.datasource.hikari.minimum-idle="2" \
     spring.datasource.hikari.maximum-pool-size="10" \
     spring.datasource.hikari.pool-name="HikariPool"
+fi
+
+if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+  echo "Patching OpenAI settings into Vault..."
+  "${VAULT_EXEC[@]}" kv patch "${SECRET_PATH}" \
+    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" \
+    helpdesk.ai.openai.model="${OPENAI_MODEL:-gpt-5.2}"
+else
+  echo "OPENAI_API_KEY is not set. Skipping OpenAI Vault patch."
 fi
 
 "${VAULT_EXEC[@]}" kv get "${SECRET_PATH}"
