@@ -44,4 +44,4 @@ fi
 
 mvn spring-boot:run \
   -Dspring-boot.run.main-class=com.helpdesk.HelpdeskApplication \
-  -Dspring-boot.run.arguments="--spring.ai.mcp.client.enabled=false --spring.ai.mcp.server.enabled=true"
+  -Dspring-boot.run.arguments="--spring.ai.mcp.server.enabled=true"

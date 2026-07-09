@@ -3,9 +3,22 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: none
+
   cloud:
     vault:
       enabled: false
+
+  ai:
+    openai:
+      api-key: test-key
+      chat:
+        options:
+          model: gpt-5.2
+
 springdoc:
   api-docs:
+    enabled: false
+
+helpdesk:
+  ai:
     enabled: false

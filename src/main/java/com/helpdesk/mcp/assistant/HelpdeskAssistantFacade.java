@@ -38,4 +38,49 @@ public class HelpdeskAssistantFacade {
                 promptService.suggestResponsePrompt(context)
         );
     }
+
+    public String classifyIssuePriority(Integer requestId) {
+        val context = contextBuilder.buildTicketContext(requestId);
+
+        return aiService.chat(
+                promptService.systemPrompt(),
+                promptService.classifyPriorityPrompt(context)
+        );
+    }
+
+    public String estimateIssueCategory(Integer requestId) {
+        val context = contextBuilder.buildTicketContext(requestId);
+
+        return aiService.chat(
+                promptService.systemPrompt(),
+                promptService.estimateCategoryPrompt(context)
+        );
+    }
+
+    public String generateIssueTimeline(Integer requestId) {
+        val context = contextBuilder.buildTicketContext(requestId);
+
+        return aiService.chat(
+                promptService.systemPrompt(),
+                promptService.timelinePrompt(context)
+        );
+    }
+
+    public String createEscalationSummary(Integer requestId) {
+        val context = contextBuilder.buildTicketContext(requestId);
+
+        return aiService.chat(
+                promptService.systemPrompt(),
+                promptService.escalationSummaryPrompt(context)
+        );
+    }
+
+    public String generateKnowledgeBaseArticle(Integer requestId) {
+        val context = contextBuilder.buildTicketContext(requestId);
+
+        return aiService.chat(
+                promptService.systemPrompt(),
+                promptService.knowledgeBaseArticlePrompt(context)
+        );
+    }
 }
