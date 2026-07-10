@@ -1,35 +1,29 @@
 # Dummy Helpdesk API
 
-Helpdesk is a Spring Boot application that exposes a helpdesk data model through REST endpoints, protobuf-based HTTP endpoints, and an embedded MCP server for AI clients. It uses MySQL for persistence, Vault for secrets, and a configurable AI provider for assistant-style MCP tools.
+Helpdesk is a Spring Boot application that exposes a helpdesk data model through REST endpoints, protobuf-based HTTP endpoints, and an embedded MCP server for AI clients. It uses MySQL for persistence, Vault for secrets, and either OpenAI or LM Studio for AI-assisted tools.
 
-## Overview
+## What’s included
 
-The project contains:
+- REST API for issue requesters, requests, and responses
+- Protobuf message definitions for typed payloads
+- Embedded Spring AI MCP server that exposes backend operations as tools
+- AI-backed summarization and response generation through OpenAI or LM Studio
 
-- a REST API for managing issue requesters, requests, and responses
-- protobuf message definitions for typed request and response payloads
-- an embedded Spring AI MCP server that exposes selected backend operations as tools
-- an assistant layer that uses either OpenAI or LM Studio for summarization and response generation
-
-## Technologies Used
+## Tech stack
 
 - Java 17
 - Maven
 - Spring Boot
-- Spring Cloud
 - Spring Cloud Vault
 - Spring Data JPA
 - MySQL
 - Hibernate ORM
 - Google Protocol Buffers
-- Protobuf Maven Plugin
-- Spring AI
-- Model Context Protocol (MCP)
+- Spring AI / MCP
 - OpenAI Java SDK
 - JUnit 5
 - Testcontainers
 - Lombok
-- HashiCorp Vault
 
 ## Prerequisites
 
@@ -38,27 +32,27 @@ The project contains:
 - Maven
 - `protoc` installed locally
 
-The project uses the protobuf Maven plugin to generate Java classes from the `.proto` files. The current `pom.xml` points to a specific `protoc` path, so adjust that path if your local installation differs.
+The project uses the protobuf Maven plugin to generate Java classes from `.proto` files. The `pom.xml` points to a specific `protoc` path, so update that path if your local installation differs.
 
-For integration tests, you may also want to pre-pull the Docker images used by Testcontainers:
+For integration tests, you may want to pre-pull the Docker images used by Testcontainers:
 
 ```bash
 docker pull testcontainers/ryuk:0.12.0
 docker pull mysql:8.0
 ```
 
-### AI provider requirements
+## AI provider configuration
 
-The application supports two AI providers, selected in `src/main/resources/application.yml` with `helpdesk.ai.provider`:
+The active AI provider is selected in `src/main/resources/application.yml` with `helpdesk.ai.provider`:
 
 - `lm-studio` for local testing
-- `openai` for hosted API usage
+- `openai` for hosted usage
 
-For local MCP testing with `lm-studio`, install and run LM Studio locally. The recommended model is `unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF`.
+If you use LM Studio, run it locally and point it at `http://localhost:1234/v1` or update `helpdesk.ai.lm-studio.base-url`. The recommended model for MCP tests is `unsloth/Qwen3-Coder-30B-A3-B-Instruct-GGUF`.
 
-For `openai`, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`; those scripts patch the key into Vault automatically.
+If you use OpenAI, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`; those scripts patch the key into Vault automatically. You can also set `OPENAI_MODEL` if needed.
 
-## Quick Start
+## Quick start
 
 The fastest way to build and run everything is:
 
@@ -66,7 +60,7 @@ The fastest way to build and run everything is:
 ./build.sh
 ```
 
-That script:
+`build.sh`:
 
 - starts MySQL
 - creates the database schema
@@ -74,11 +68,11 @@ That script:
 - starts Vault
 - creates the required Vault secret
 - patches OpenAI settings into Vault if `OPENAI_API_KEY` is set
-- generates Java sources from the protobuf files
+- generates Java sources from protobuf files
 - runs the tests
 - compiles the project
 
-## Local Development
+## Manual setup
 
 ### 1) Start MySQL 8
 
@@ -119,11 +113,11 @@ CREATE TABLE issue_requester
 CREATE TABLE issue_request
 (
     id           INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    requester_id INT NOT NULL,
-    request_body TEXT NOT NULL,
-    is_solved    BOOLEAN DEFAULT FALSE,
-    created      DATETIME DEFAULT CURRENT_TIMESTAMP,
-    solved       DATETIME NULL,
+    requester_id  INT NOT NULL,
+    request_body  TEXT NOT NULL,
+    is_solved     BOOLEAN DEFAULT FALSE,
+    created       DATETIME DEFAULT CURRENT_TIMESTAMP,
+    solved        DATETIME NULL,
     FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -181,7 +175,7 @@ export VAULT_TOKEN=root
 
 ### 6) Store database settings in Vault
 
-Spring reads the settings directly from `secret/helpdesk`.
+Spring reads database settings from `secret/helpdesk`.
 
 ```bash
 docker exec \
@@ -203,7 +197,7 @@ docker exec \
 
 ### 7) Configure the AI provider
 
-The AI provider is selected in `src/main/resources/application.yml`:
+Set the provider in `src/main/resources/application.yml`:
 
 ```yaml
 helpdesk:
@@ -211,26 +205,16 @@ helpdesk:
     provider: lm-studio
 ```
 
-Set the value to `openai` to use the hosted OpenAI endpoint, or `lm-studio` to use a local LM Studio instance.
-
-For local MCP testing, LM Studio is supported and does not require an OpenAI API key. The recommended model for MCP tests is:
-
-```text
-unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF
-```
-
-If you use LM Studio, make sure it is running at `http://localhost:1234/v1` or update `helpdesk.ai.lm-studio.base-url` accordingly.
+Use `openai` for hosted API usage or `lm-studio` for local testing.
 
 ### 8) Store OpenAI settings in Vault
-
-The OpenAI API key should not be committed to Git. Export `OPENAI_API_KEY` locally and let `build.sh` or `run.sh` patch Vault automatically.
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
 export OPENAI_MODEL="gpt-5.2"
 ```
 
-If you prefer to patch Vault manually, use:
+If you want to patch Vault manually:
 
 ```bash
 docker exec \
@@ -278,68 +262,52 @@ spring:
 
 `run.sh`:
 
-- checks whether the Vault secret `secret/helpdesk` exists and creates it if needed
+- ensures `secret/helpdesk` exists
 - patches OpenAI settings into Vault if `OPENAI_API_KEY` is available
-- prints the Vault secret to confirm the values
+- prints the Vault secret for verification
 - starts Spring Boot with `mvn spring-boot:run`
 
-## MCP Support
+## MCP support
 
-The application includes an embedded Spring AI MCP server in the same Spring Boot process that serves the REST and protobuf-based HTTP endpoints.
+The embedded MCP server runs in the same Spring Boot process as the REST and protobuf endpoints.
 
-The MCP layer exposes the existing service layer as tools for MCP-compatible clients:
+Tool flow:
 
 ```text
 MCP Tool -> Existing Service Layer -> Repository -> Database
 ```
 
-For AI-assisted operations, the MCP layer can also build ticket context, apply a system prompt, and call the configured AI provider. The provider is selected in `src/main/resources/application.yml` with `helpdesk.ai.provider`, which can be set to `openai` or `lm-studio`.
+MCP tools expose JSON-friendly DTOs rather than JPA entities to keep responses simple and avoid serialization issues.
 
-OpenAI settings are loaded from Vault, not hardcoded in the source. LM Studio can be used locally for MCP testing without an API key.
+For AI-assisted MCP operations, the server uses the configured provider from `helpdesk.ai.provider`. OpenAI settings come from Vault; LM Studio can be used locally without an API key.
 
-The recommended LM Studio model for MCP tests is `unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF`.
+## Testing the embedded MCP server
 
-MCP tools return JSON-friendly DTOs instead of JPA entities. That keeps tool responses simple and avoids serialization issues for external MCP clients.
-
-### Testing the Embedded MCP Server
-
-Start the application first:
+Start the application:
 
 ```bash
 ./run.sh
 ```
 
-Then run the MCP smoke test in another terminal:
+Run the smoke test in another terminal:
 
 ```bash
 ./test-mcp.sh
 ```
 
-The script verifies the MCP SSE flow:
+The script verifies the SSE handshake and tool listing flow.
 
-```text
-SSE connection
-    ↓
-initialize
-    ↓
-notifications/initialized
-    ↓
-tools/list
-```
+If you want to test the AI-backed MCP flow locally, use `lm-studio`, start LM Studio, and use the recommended model above.
 
-You can also test the MCP server from clients such as MCP Inspector or Claude Desktop.
+## Claude Desktop as an MCP client
 
-If you want to test the AI-backed MCP flow locally, set `helpdesk.ai.provider: lm-studio` in `src/main/resources/application.yml`, start LM Studio, and use the recommended model above.
-
-## Claude Desktop as an MCP Client
-
-Start the application first:
+Start the application:
 
 ```bash
 ./run.sh
 ```
 
-Then configure Claude Desktop by editing:
+Then edit:
 
 ```text
 ~/Library/Application Support/Claude/claude_desktop_config.json
@@ -362,53 +330,34 @@ Example configuration:
 }
 ```
 
-After saving the file, fully restart Claude Desktop. The Helpdesk MCP tools will be discovered automatically and can then be used through natural-language prompts.
+Restart Claude Desktop after saving. The Helpdesk MCP tools will be discovered automatically.
+
+## API docs and examples
+
+OpenAPI docs:
+
+```bash
+curl localhost:8888/api-docs
+```
+
+Example requests:
+
+```bash
+curl --header "accept: application/json" localhost:8888/v1/issue_requesters/1
+curl --header "accept: application/xml" localhost:8888/v1/issue_requesters/1
+curl localhost:8888/v1/issue_requesters/1
+```
+
+## Screenshots
 
 ![Local MCP Servers Screen Capture](local-mcp-servers.png)
 ![Local MCP Test 0](local-mcp-test-0.png)
 ![Local MCP Test](local-mcp-test-2.png)
 ![Local MCP Test 2](local-mcp-test.png)
 ![Local MCP Test 3](local-mcp-test-3.png)
-
-### Database Entries
-
 ![Local MCP Test DB](local-mcp-test-db.png)
-
-## OpenAPI Documentation
-
-```bash
-curl localhost:8888/api-docs
-```
-
 ![Open API Screen Capture](open-api-sc.JPG)
-
-### Example API Calls
-
-#### JSON
-
-```bash
-curl --header "accept: application/json" localhost:8888/v1/issue_requesters/1
-```
-
-#### XML
-
-```bash
-curl --header "accept: application/xml" localhost:8888/v1/issue_requesters/1
-```
-
-#### Protobuf over HTTP
-
-```bash
-curl localhost:8888/v1/issue_requesters/1
-```
 
 ## License
 
-The MIT License (MIT)
-Copyright © 2025
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+MIT License. Copyright © 2025.
