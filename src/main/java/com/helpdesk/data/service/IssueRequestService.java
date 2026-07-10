@@ -229,6 +229,7 @@ public class IssueRequestService {
             val id = model.getId();
             if (id == null || id <= 0) {
                 model.setId(null);
+                model.setSolved(null);
                 return issueRequestRepository.save(model);
             }
 
