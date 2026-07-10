@@ -1,6 +1,5 @@
-package com.helpdesk.mcp.ai;
+package com.helpdesk.mcp.tooling.assistant;
 
-import com.helpdesk.mcp.assistant.HelpdeskAssistantFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;

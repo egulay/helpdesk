@@ -1,5 +1,6 @@
-package com.helpdesk.mcp.assistant;
+package com.helpdesk.mcp.ai;
 
+import com.helpdesk.mcp.tooling.assistant.HelpdeskTicketContext;
 import org.springframework.stereotype.Service;
 
 @Service

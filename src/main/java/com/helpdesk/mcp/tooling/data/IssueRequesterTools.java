@@ -1,4 +1,4 @@
-package com.helpdesk.mcp.tool;
+package com.helpdesk.mcp.tooling.data;
 
 import com.helpdesk.data.model.IssueRequesterModel;
 import com.helpdesk.data.service.IssueRequesterService;

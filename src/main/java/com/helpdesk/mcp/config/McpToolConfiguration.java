@@ -1,9 +1,9 @@
 package com.helpdesk.mcp.config;
 
-import com.helpdesk.mcp.ai.HelpdeskAssistantTools;
-import com.helpdesk.mcp.tool.IssueRequesterTools;
-import com.helpdesk.mcp.tool.IssueRequestTools;
-import com.helpdesk.mcp.tool.IssueResponseTools;
+import com.helpdesk.mcp.tooling.assistant.HelpdeskAssistantTools;
+import com.helpdesk.mcp.tooling.data.IssueRequesterTools;
+import com.helpdesk.mcp.tooling.data.IssueRequestTools;
+import com.helpdesk.mcp.tooling.data.IssueResponseTools;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.context.annotation.Bean;
