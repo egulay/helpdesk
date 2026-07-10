@@ -1,4 +1,4 @@
-package com.helpdesk.mcp.tooling.assistant;
+package com.helpdesk.mcp.tools.assistant;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.tool.annotation.Tool;
