@@ -1,6 +1,6 @@
 # Dummy Helpdesk API
 
-Helpdesk is a Spring Boot application that exposes a helpdesk data model through REST endpoints, protobuf-based HTTP endpoints, and an embedded MCP server for AI clients. It uses MySQL for persistence, Vault for secrets, and OpenAI for assistant-style MCP tools.
+Helpdesk is a Spring Boot application that exposes a helpdesk data model through REST endpoints, protobuf-based HTTP endpoints, and an embedded MCP server for AI clients. It uses MySQL for persistence, Vault for secrets, and a configurable AI provider for assistant-style MCP tools.
 
 ## Overview
 
@@ -9,7 +9,7 @@ The project contains:
 - a REST API for managing issue requesters, requests, and responses
 - protobuf message definitions for typed request and response payloads
 - an embedded Spring AI MCP server that exposes selected backend operations as tools
-- an assistant layer that uses OpenAI for summarization and response generation
+- an assistant layer that uses either OpenAI or LM Studio for summarization and response generation
 
 ## Technologies Used
 
@@ -46,6 +46,17 @@ For integration tests, you may also want to pre-pull the Docker images used by T
 docker pull testcontainers/ryuk:0.12.0
 docker pull mysql:8.0
 ```
+
+### AI provider requirements
+
+The application supports two AI providers, selected in `src/main/resources/application.yml` with `helpdesk.ai.provider`:
+
+- `lm-studio` for local testing
+- `openai` for hosted API usage
+
+For local MCP testing with `lm-studio`, install and run LM Studio locally. The recommended model is `unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF`.
+
+For `openai`, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`; those scripts patch the key into Vault automatically.
 
 ## Quick Start
 
@@ -190,16 +201,36 @@ docker exec \
     spring.datasource.hikari.pool-name="HikariPool"
 ```
 
-### 7) Store OpenAI settings in Vault
+### 7) Configure the AI provider
 
-The OpenAI API key should not be committed to Git. Store it in Vault instead.
+The AI provider is selected in `src/main/resources/application.yml`:
+
+```yaml
+helpdesk:
+  ai:
+    provider: lm-studio
+```
+
+Set the value to `openai` to use the hosted OpenAI endpoint, or `lm-studio` to use a local LM Studio instance.
+
+For local MCP testing, LM Studio is supported and does not require an OpenAI API key. The recommended model for MCP tests is:
+
+```text
+unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF
+```
+
+If you use LM Studio, make sure it is running at `http://localhost:1234/v1` or update `helpdesk.ai.lm-studio.base-url` accordingly.
+
+### 8) Store OpenAI settings in Vault
+
+The OpenAI API key should not be committed to Git. Export `OPENAI_API_KEY` locally and let `build.sh` or `run.sh` patch Vault automatically.
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
 export OPENAI_MODEL="gpt-5.2"
 ```
 
-Patch the existing Vault secret:
+If you prefer to patch Vault manually, use:
 
 ```bash
 docker exec \
@@ -220,7 +251,7 @@ docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault \
   vault kv get secret/helpdesk
 ```
 
-### 8) Tell Spring Boot to read from Vault
+### 9) Tell Spring Boot to read from Vault
 
 ```yaml
 spring:
@@ -239,7 +270,7 @@ spring:
         application-name: ${spring.application.name}
 ```
 
-### 9) Start the API
+### 10) Start the API
 
 ```bash
 ./run.sh
@@ -262,7 +293,11 @@ The MCP layer exposes the existing service layer as tools for MCP-compatible cli
 MCP Tool -> Existing Service Layer -> Repository -> Database
 ```
 
-For AI-assisted operations, the MCP layer can also build ticket context, apply a system prompt, and call the configured OpenAI model. The OpenAI API key and model are loaded from Vault, not hardcoded in the source.
+For AI-assisted operations, the MCP layer can also build ticket context, apply a system prompt, and call the configured AI provider. The provider is selected in `src/main/resources/application.yml` with `helpdesk.ai.provider`, which can be set to `openai` or `lm-studio`.
+
+OpenAI settings are loaded from Vault, not hardcoded in the source. LM Studio can be used locally for MCP testing without an API key.
+
+The recommended LM Studio model for MCP tests is `unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF`.
 
 MCP tools return JSON-friendly DTOs instead of JPA entities. That keeps tool responses simple and avoids serialization issues for external MCP clients.
 
@@ -293,6 +328,8 @@ tools/list
 ```
 
 You can also test the MCP server from clients such as MCP Inspector or Claude Desktop.
+
+If you want to test the AI-backed MCP flow locally, set `helpdesk.ai.provider: lm-studio` in `src/main/resources/application.yml`, start LM Studio, and use the recommended model above.
 
 ## Claude Desktop as an MCP Client
 
