@@ -1,40 +1,31 @@
 package com.helpdesk.mcp.client;
 
 import com.openai.client.OpenAIClient;
-import com.openai.models.ChatModel;
-import com.openai.models.responses.ResponseCreateParams;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor
-public class OpenAiService implements AiService {
+@ConditionalOnProperty(
+        prefix = "helpdesk.ai",
+        name = "provider",
+        havingValue = "openai"
+)
+public class OpenAiService extends AbstractAiService {
 
-    private final OpenAIClient client;
+    public OpenAiService(
+            @Qualifier("openAiClient") OpenAIClient client,
+            @Value("${helpdesk.ai.openai.model:gpt-5.2}") String model,
+            @Value("${helpdesk.ai.openai.base-url:https://api.openai.com/v1}") String baseUrl
+    ) {
+        super(client, model);
 
-    @Value("${helpdesk.ai.openai.model:gpt-5.2}")
-    private String model;
-
-    @Override
-    public String chat(String systemPrompt, String userPrompt) {
-        val params = ResponseCreateParams.builder()
-                .model(ChatModel.of(model))
-                .instructions(systemPrompt)
-                .input(userPrompt)
-                .build();
-
-        val response = client.responses().create(params);
-
-        val result = new StringBuilder();
-
-        response.output().stream()
-                .flatMap(item -> item.message().stream())
-                .flatMap(message -> message.content().stream())
-                .flatMap(content -> content.outputText().stream())
-                .forEach(text -> result.append(text.text()));
-
-        return result.toString();
+        log.info("AI provider initialized");
+        log.info("AI provider : OpenAI");
+        log.info("AI model    : {}", model);
+        log.info("AI endpoint : {}", baseUrl);
     }
 }

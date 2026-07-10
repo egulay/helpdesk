@@ -1,3 +1,13 @@
+helpdesk:
+  ai:
+    provider: lm-studio
+    lm-studio:
+      base-url: http://localhost:1234/v1
+      model: unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF
+    openai:
+      base-url: https://api.openai.com/v1
+      model: gpt-5.2
+
 spring:
   application:
     name: helpdesk
