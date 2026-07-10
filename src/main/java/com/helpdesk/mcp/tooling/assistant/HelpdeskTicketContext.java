@@ -1,4 +1,4 @@
-package com.helpdesk.mcp.assistant;
+package com.helpdesk.mcp.tooling.assistant;
 
 import lombok.val;
 
