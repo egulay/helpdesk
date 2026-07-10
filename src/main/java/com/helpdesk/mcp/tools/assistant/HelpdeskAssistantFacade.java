@@ -1,7 +1,7 @@
-package com.helpdesk.mcp.tooling.assistant;
+package com.helpdesk.mcp.tools.assistant;
 
-import com.helpdesk.mcp.ai.AiService;
-import com.helpdesk.mcp.ai.HelpdeskPromptService;
+import com.helpdesk.mcp.client.AiService;
+import com.helpdesk.mcp.prompt.HelpdeskPromptService;
 import lombok.val;
 import org.springframework.stereotype.Service;
 

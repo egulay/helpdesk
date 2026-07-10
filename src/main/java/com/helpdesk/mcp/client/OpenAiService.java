@@ -1,4 +1,4 @@
-package com.helpdesk.mcp.ai;
+package com.helpdesk.mcp.client;
 
 import com.openai.client.OpenAIClient;
 import com.openai.models.ChatModel;
