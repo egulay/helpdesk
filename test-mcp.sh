@@ -50,7 +50,6 @@ extract_report_data() {
   : > "$TOOLS_FILE"
 
   while IFS= read -r line; do
-    # Remove a possible carriage return from CRLF output.
     line="${line%$'\r'}"
 
     case "$line" in
@@ -63,12 +62,8 @@ extract_report_data() {
         ;;
 
       data:*)
-        # Supports both:
-        # data:{"jsonrpc":...}
-        # data: {"jsonrpc":...}
         payload="${line#data:}"
 
-        # Remove leading whitespace.
         payload="${payload#"${payload%%[![:space:]]*}"}"
 
         if [[ -z "$payload" ]]; then
