@@ -1,79 +1,75 @@
 # Dummy Helpdesk API
 
+Helpdesk is a Spring Boot application that exposes a helpdesk data model through REST endpoints, protobuf-based HTTP endpoints, and an embedded MCP server for AI clients. It uses MySQL for persistence, Vault for secrets, and OpenAI for assistant-style MCP tools.
+
+## Overview
+
+The project contains:
+
+- a REST API for managing issue requesters, requests, and responses
+- protobuf message definitions for typed request and response payloads
+- an embedded Spring AI MCP server that exposes selected backend operations as tools
+- an assistant layer that uses OpenAI for summarization and response generation
+
 ## Technologies Used
 
-- Java 17 – the programming language used to build the project
-- Maven – a tool to build and manage the project
-- Spring Boot – the main application framework
-- Spring Cloud – helps connect different parts of the system
-- Spring Cloud Vault – loads secrets and configuration from HashiCorp Vault
-- Spring Data JPA – makes it easier to work with databases
-- MySQL – the database used to store the data
-- Hibernate ORM – connects Java objects with database tables
-- Google Protocol Buffers – a way to exchange data in a fast and small format
-- Protobuf Maven Plugin – generates Java code from .proto files
-- Spring AI – provides MCP server support and tool registration
-- Model Context Protocol (MCP) – exposes API capabilities as tools for AI clients
-- OpenAI Java SDK – calls OpenAI models from the MCP assistant layer
-- JUnit 5 – used for testing the code
-- Testcontainers – runs temporary databases in Docker for tests
-- Lombok – reduces boilerplate code in Java classes
-- HashiCorp Vault – stores secrets like database credentials and OpenAI API keys safely
+- Java 17
+- Maven
+- Spring Boot
+- Spring Cloud
+- Spring Cloud Vault
+- Spring Data JPA
+- MySQL
+- Hibernate ORM
+- Google Protocol Buffers
+- Protobuf Maven Plugin
+- Spring AI
+- Model Context Protocol (MCP)
+- OpenAI Java SDK
+- JUnit 5
+- Testcontainers
+- Lombok
+- HashiCorp Vault
 
-## Installation & Execution
+## Prerequisites
 
-You need the latest [Docker Desktop](https://www.docker.com/products/docker-desktop/) to run integration tests with the Maven Surefire plugin.
+- Docker Desktop
+- Java 17
+- Maven
+- `protoc` installed locally
 
-### Base [Docker](https://www.docker.com/products/docker-desktop/) Images for Integration Tests
+The project uses the protobuf Maven plugin to generate Java classes from the `.proto` files. The current `pom.xml` points to a specific `protoc` path, so adjust that path if your local installation differs.
 
-* #### Testcontainers version 0.12.0
+For integration tests, you may also want to pre-pull the Docker images used by Testcontainers:
 
-```sh
+```bash
 docker pull testcontainers/ryuk:0.12.0
-```
-
-* #### MySQL version 8.0
-
-```sh
 docker pull mysql:8.0
 ```
 
----
+## Quick Start
 
-> **_NOTE:_** The Protobuf compiler is required to build Java classes from the ".proto" files in the
-proto directory. The path to protoc is set in the pom.xml plugin configuration (see protocExecutable), for example:
+The fastest way to build and run everything is:
 
-```xml
-<!-- Protobuf codegen (this script uses your protoc path) -->
-<plugin>
-    <groupId>org.xolstice.maven.plugins</groupId>
-    <artifactId>protobuf-maven-plugin</artifactId>
-    <version>${protobuf-maven-plugin.version}</version>
-    <configuration>
-        <protocExecutable>/opt/homebrew/Cellar/protobuf/32.0_1/bin/protoc</protocExecutable>
-    </configuration>
-    <executions>
-        <execution>
-            <goals>
-                <goal>compile</goal>
-                <goal>test-compile</goal>
-            </goals>
-        </execution>
-    </executions>
-</plugin>
-```
-
-### Building the Project
-
-```sh
+```bash
 ./build.sh
 ```
 
-* The build.sh script pulls and starts MySQL, executes the DDL and seeds some data, pulls and starts Vault, creates the necessary secret, patches OpenAI configuration into Vault if `OPENAI_API_KEY` is available, then generates Java sources from the proto directory, runs the tests, and compiles the project.
+That script:
 
-### Development Mode Guide
+- starts MySQL
+- creates the database schema
+- seeds sample data
+- starts Vault
+- creates the required Vault secret
+- patches OpenAI settings into Vault if `OPENAI_API_KEY` is set
+- generates Java sources from the protobuf files
+- runs the tests
+- compiles the project
 
-#### 1) Run MySQL 8 (Docker)
+## Local Development
+
+### 1) Start MySQL 8
 
 ```bash
 docker run -d --name mysql8 \
@@ -85,17 +81,16 @@ docker run -d --name mysql8 \
   mysql:8.0
 ```
 
-#### 2) Execute DDL Script
+### 2) Create the schema
 
 ```mysql
 DROP DATABASE IF EXISTS help_desk;
 
-CREATE
-    DATABASE help_desk
+CREATE DATABASE help_desk
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_0900_ai_ci;
-USE
-    help_desk;
+
+USE help_desk;
 
 DROP TABLE IF EXISTS issue_response;
 DROP TABLE IF EXISTS issue_request;
@@ -103,19 +98,19 @@ DROP TABLE IF EXISTS issue_requester;
 
 CREATE TABLE issue_requester
 (
-    id        INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(255) NOT NULL,
-    email     VARCHAR(255) NOT NULL,
-    is_active BOOLEAN  DEFAULT TRUE,
-    created   DATETIME DEFAULT CURRENT_TIMESTAMP
+    id         INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    full_name  VARCHAR(255) NOT NULL,
+    email      VARCHAR(255) NOT NULL,
+    is_active  BOOLEAN DEFAULT TRUE,
+    created    DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE issue_request
 (
-    id           INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    requester_id INT  NOT NULL,
+    id           INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    requester_id INT NOT NULL,
     request_body TEXT NOT NULL,
-    is_solved    BOOLEAN  DEFAULT FALSE,
+    is_solved    BOOLEAN DEFAULT FALSE,
     created      DATETIME DEFAULT CURRENT_TIMESTAMP,
     solved       DATETIME NULL,
     FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
@@ -124,9 +119,9 @@ CREATE TABLE issue_request
 
 CREATE TABLE issue_response
 (
-    id            INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    request_id    INT  NOT NULL,
-    requester_id  INT  NOT NULL,
+    id            INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    request_id    INT NOT NULL,
+    requester_id  INT NOT NULL,
     response_body TEXT NOT NULL,
     created       DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (requester_id) REFERENCES issue_requester (id)
@@ -136,7 +131,7 @@ CREATE TABLE issue_response
 );
 ```
 
-#### 3) Seed Test Data (SQL)
+### 3) Seed sample data
 
 ```mysql
 SET FOREIGN_KEY_CHECKS = 0;
@@ -155,7 +150,7 @@ INSERT INTO issue_response (request_id, requester_id, response_body)
 VALUES (1, 1, 'It is OK... I am not loving her anymore either :P');
 ```
 
-#### 4) Run Vault (dev mode, Docker)
+### 4) Start Vault in dev mode
 
 ```bash
 docker run -d --name vault \
@@ -166,16 +161,16 @@ docker run -d --name vault \
   server -dev -dev-root-token-id=root -dev-listen-address=0.0.0.0:8200
 ```
 
-#### 5) Set environment variables on your host terminal
+### 5) Set Vault environment variables
 
 ```bash
 export VAULT_ADDR=http://localhost:8200
 export VAULT_TOKEN=root
 ```
 
-#### 6) Save your DB settings into Vault (KV v2)
+### 6) Store database settings in Vault
 
-It stores the properties with the same keys Spring uses. Spring will read them directly from `secret/helpdesk`.
+Spring reads the settings directly from `secret/helpdesk`.
 
 ```bash
 docker exec \
@@ -195,7 +190,7 @@ docker exec \
     spring.datasource.hikari.pool-name="HikariPool"
 ```
 
-#### 7) Save OpenAI settings into Vault
+### 7) Store OpenAI settings in Vault
 
 The OpenAI API key should not be committed to Git. Store it in Vault instead.
 
@@ -204,7 +199,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 export OPENAI_MODEL="gpt-5.2"
 ```
 
-Then patch the existing Vault secret:
+Patch the existing Vault secret:
 
 ```bash
 docker exec \
@@ -225,18 +220,18 @@ docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault \
   vault kv get secret/helpdesk
 ```
 
-#### 8) Tell Spring Boot to read from Vault
+### 8) Tell Spring Boot to read from Vault
 
 ```yaml
 spring:
   application:
     name: helpdesk
   config:
-    import: optional:vault://   # reads config from Vault at startup
+    import: optional:vault://
   cloud:
     vault:
       enabled: true
-      uri: ${VAULT_ADDR}        # reads Vault address from environment variable
+      uri: ${VAULT_ADDR}
       token: ${VAULT_TOKEN}
       kv:
         enabled: true
@@ -244,41 +239,32 @@ spring:
         application-name: ${spring.application.name}
 ```
 
-#### 9) Start the API
+### 9) Start the API
 
-```sh
+```bash
 ./run.sh
 ```
 
-The run.sh script:
-- Checks if the Vault secret `secret/helpdesk` exists and creates it if missing.
-- Patches OpenAI settings into Vault if `OPENAI_API_KEY` is available.
-- Prints the Vault secret to confirm values.
-- Runs the Spring Boot application with `mvn spring-boot:run`.
+`run.sh`:
+
+- checks whether the Vault secret `secret/helpdesk` exists and creates it if needed
+- patches OpenAI settings into Vault if `OPENAI_API_KEY` is available
+- prints the Vault secret to confirm the values
+- starts Spring Boot with `mvn spring-boot:run`
 
 ## MCP Support
 
-This project includes an embedded Spring AI MCP server in the same Spring Boot application that already serves the REST and gRPC-style endpoints.
+The application includes an embedded Spring AI MCP server in the same Spring Boot process that serves the REST and protobuf-based HTTP endpoints.
 
-The MCP layer acts as a third adapter over the existing service layer:
-
-```text
-REST / JSON / XML API
-gRPC-style binary API
-MCP tool server
-```
-
-MCP does not replace the normal API. It exposes selected backend capabilities as tools so MCP-compatible AI clients can discover and invoke them.
-
-The implementation follows a simple rule:
+The MCP layer exposes the existing service layer as tools for MCP-compatible clients:
 
 ```text
 MCP Tool -> Existing Service Layer -> Repository -> Database
 ```
 
-For AI-assisted operations, the MCP layer can also build a ticket context, apply a system/default prompt, and call the configured OpenAI model. The OpenAI API key and model are loaded from Vault, not hardcoded in the source code.
+For AI-assisted operations, the MCP layer can also build ticket context, apply a system prompt, and call the configured OpenAI model. The OpenAI API key and model are loaded from Vault, not hardcoded in the source.
 
-MCP tools return JSON-friendly DTO/record objects instead of JPA model classes. This keeps tool responses simple and avoids serialization problems when external MCP clients call the server.
+MCP tools return JSON-friendly DTOs instead of JPA entities. That keeps tool responses simple and avoids serialization issues for external MCP clients.
 
 ### Testing the Embedded MCP Server
 
@@ -288,13 +274,13 @@ Start the application first:
 ./run.sh
 ```
 
-Then, in another terminal, run:
+Then run the MCP smoke test in another terminal:
 
 ```bash
 ./test-mcp.sh
 ```
 
-The `test-mcp.sh` script verifies the MCP SSE flow:
+The script verifies the MCP SSE flow:
 
 ```text
 SSE connection
@@ -306,11 +292,9 @@ notifications/initialized
 tools/list
 ```
 
-MCP can also be tested from external clients such as MCP Inspector or Claude Desktop.
+You can also test the MCP server from clients such as MCP Inspector or Claude Desktop.
 
-## Claude Desktop (MCP Client)
-
-The embedded MCP server can also be tested interactively with Claude Desktop.
+## Claude Desktop as an MCP Client
 
 Start the application first:
 
@@ -340,17 +324,22 @@ Example configuration:
   }
 }
 ```
-After saving the configuration, completely restart Claude Desktop. The Helpdesk MCP tools will be discovered automatically and can then be invoked through natural-language questions.
+
+After saving the file, fully restart Claude Desktop. The Helpdesk MCP tools will be discovered automatically and can then be used through natural-language prompts.
+
 ![Local MCP Servers Screen Capture](local-mcp-servers.png)
 ![Local MCP Test 0](local-mcp-test-0.png)
 ![Local MCP Test](local-mcp-test-2.png)
 ![Local MCP Test 2](local-mcp-test.png)
 ![Local MCP Test 3](local-mcp-test-3.png)
-### Database entries
+
+### Database Entries
+
 ![Local MCP Test DB](local-mcp-test-db.png)
 
-## Open API Documentation (in JSON)
-```sh
+## OpenAPI Documentation
+
+```bash
 curl localhost:8888/api-docs
 ```
 
@@ -358,25 +347,25 @@ curl localhost:8888/api-docs
 
 ### Example API Calls
 
-#### JSON (HTTP/1.1)
+#### JSON
 
-```sh
+```bash
 curl --header "accept: application/json" localhost:8888/v1/issue_requesters/1
 ```
 
-#### XML (HTTP/1.1)
+#### XML
 
-```sh
+```bash
 curl --header "accept: application/xml" localhost:8888/v1/issue_requesters/1
 ```
 
-#### gRPC / Binary (HTTP/2)
+#### Protobuf over HTTP
 
-```sh
+```bash
 curl localhost:8888/v1/issue_requesters/1
 ```
 
-### License
+## License
 
 The MIT License (MIT)
 Copyright © 2025
