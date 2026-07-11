@@ -1,3 +1,17 @@
+<table>
+<tr>
+<td>
+<span style="font-size:28px;">🇹🇷</span> 
+
+Bu proje eğitim amacıyla paylaşılmıştır.
+
+İçerisinde bilinçli olarak bırakılmış mantıksal ve mimari eksiklikler vardır.
+
+Doğrudan kopyalanıp ticari ürün olarak sunulması tavsiye edilmez. Böyle bir tercihin en büyük maliyeti teknik borç değil, ticari itibardır.
+</td>
+</tr>
+</table>
+
 # Dummy Helpdesk API
 
 Helpdesk is a Spring Boot application that exposes a helpdesk data model through REST endpoints, protobuf-based HTTP endpoints, and an embedded MCP server for AI clients. It uses MySQL for persistence, Vault for secrets, and either OpenAI or LM Studio for AI-assisted tools.
