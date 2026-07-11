@@ -19,21 +19,27 @@ export VAULT_TOKEN=${VAULT_TOKEN:-root}
 
 SECRET_PATH=${SECRET_PATH:-secret/helpdesk}
 
+echo "══════════════════════════════════════════════"
+echo "🚀 Helpdesk Build & Environment Setup"
+echo "══════════════════════════════════════════════"
+
 if [[ "${RESET_DB:-false}" == "true" ]]; then
   if docker ps -a --format '{{.Names}}' | grep -q "^${MYSQL_CONTAINER}$"; then
-    echo "RESET_DB=true -> removing existing MySQL container and volumes (${MYSQL_CONTAINER})"
+    echo "🧹 RESET_DB=true -> removing existing MySQL container and volumes (${MYSQL_CONTAINER})"
     docker rm -fv "${MYSQL_CONTAINER}" >/dev/null || true
   fi
 fi
 
 if ! docker ps --format '{{.Names}}' | grep -q "^${MYSQL_CONTAINER}$"; then
   if docker ps -a --format '{{.Names}}' | grep -q "^${MYSQL_CONTAINER}$"; then
-    echo "Removing existing stopped container: ${MYSQL_CONTAINER}"
+    echo "🧹 Removing existing stopped container: ${MYSQL_CONTAINER}"
     docker rm -f "${MYSQL_CONTAINER}" >/dev/null
   fi
-  echo "Pulling ${MYSQL_IMAGE} ..."
+
+  echo "📦 Pulling ${MYSQL_IMAGE}..."
   docker pull "${MYSQL_IMAGE}"
-  echo "Starting MySQL container: ${MYSQL_CONTAINER}"
+
+  echo "🐬 Starting MySQL container: ${MYSQL_CONTAINER}"
   docker run -d --name "${MYSQL_CONTAINER}" \
     -p ${MYSQL_PORT}:3306 \
     -e MYSQL_DATABASE="${MYSQL_DATABASE}" \
@@ -42,88 +48,106 @@ if ! docker ps --format '{{.Names}}' | grep -q "^${MYSQL_CONTAINER}$"; then
     -e MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}" \
     "${MYSQL_IMAGE}" >/dev/null
 else
-  echo "MySQL container '${MYSQL_CONTAINER}' already running."
+  echo "✅ MySQL container '${MYSQL_CONTAINER}' is already running."
 fi
 
-echo -n "Waiting for MySQL to be ready"
+echo -n "⏳ Waiting for MySQL to be ready"
 for i in {1..60}; do
   if docker exec "${MYSQL_CONTAINER}" bash -lc "mysqladmin ping -uroot -p\"${MYSQL_ROOT_PASSWORD}\" --silent" >/dev/null 2>&1; then
-    echo " - ready"
+    echo " - ✅ ready"
     break
   fi
+
   echo -n "."
   sleep 1
+
   if [[ $i -eq 60 ]]; then
-    echo "\nERROR: MySQL did not become ready in time." >&2
+    echo
+    echo "❌ ERROR: MySQL did not become ready in time." >&2
     exit 1
   fi
 done
 
 if [[ ! -f "${DDL_PATH}" ]]; then
-  echo "ERROR: DDL file not found at ${DDL_PATH}" >&2
+  echo "❌ ERROR: DDL file not found at ${DDL_PATH}" >&2
   exit 1
 fi
 
-echo "Copying DDL into MySQL container..."
+echo "📄 Copying DDL into MySQL container..."
 docker cp "${DDL_PATH}" "${MYSQL_CONTAINER}:/ddl.sql"
 
-echo "Ensuring application user can connect (retry up to 20x)..."
+echo "🔄 Ensuring application user can connect (retry up to 20x)..."
 APP_OK=false
+
 for i in {1..20}; do
   if docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -u\"${MYSQL_USER}\" -p\"${MYSQL_PASSWORD}\" -e 'SELECT 1' \"${MYSQL_DATABASE}\" >/dev/null 2>&1"; then
     APP_OK=true
     break
   fi
-  echo "  attempt $i/20: app user not ready yet; waiting 2s..."
+
+  echo "  🔄 Attempt $i/20: application user is not ready yet; waiting 2s..."
   sleep 2
 done
 
 if [[ "$APP_OK" == "true" ]]; then
-  echo "Executing DDL with app user..."
+  echo "📄 Executing DDL with application user..."
   docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -u\"${MYSQL_USER}\" -p\"${MYSQL_PASSWORD}\" \"${MYSQL_DATABASE}\" < /ddl.sql"
-  echo "DDL executed successfully."
+  echo "✅ DDL executed successfully."
 else
-  echo "App user still not ready; attempting repair using root and re-running DDL..."
+  echo "⚠️ Application user is still not ready; attempting repair using root and re-running DDL..."
+
   if docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -uroot -p\"${MYSQL_ROOT_PASSWORD}\" -e 'SELECT 1' >/dev/null 2>&1"; then
     docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -uroot -p\"${MYSQL_ROOT_PASSWORD}\" -e \"CREATE DATABASE IF NOT EXISTS \\\`${MYSQL_DATABASE}\\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci; CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}'; GRANT ALL ON \\\`${MYSQL_DATABASE}\\\`.* TO '${MYSQL_USER}'@'%'; FLUSH PRIVILEGES;\""
+
     docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -u\"${MYSQL_USER}\" -p\"${MYSQL_PASSWORD}\" \"${MYSQL_DATABASE}\" < /ddl.sql"
-    echo "DDL executed successfully after repair."
+
+    echo "✅ DDL executed successfully after repair."
   else
-    echo "WARNING: Root login failed; if this is a reused data dir, remove the container with volumes: 'docker rm -fv ${MYSQL_CONTAINER}' and re-run this script." >&2
+    echo "❌ Root login failed. If this is a reused data directory, remove the container with volumes and run again:" >&2
+    echo "   docker rm -fv ${MYSQL_CONTAINER}" >&2
     exit 1
   fi
 fi
 
 if ! docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -u\"${MYSQL_USER}\" -p\"${MYSQL_PASSWORD}\" -e 'SELECT 1' \"${MYSQL_DATABASE}\" >/dev/null 2>&1"; then
-  echo "App user ${MYSQL_USER} cannot connect; attempting repair using root..."
+  echo "⚠️ Application user '${MYSQL_USER}' cannot connect; attempting repair using root..."
+
   if docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -uroot -p\"${MYSQL_ROOT_PASSWORD}\" -e 'SELECT 1' >/dev/null 2>&1"; then
     docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -uroot -p\"${MYSQL_ROOT_PASSWORD}\" -e \"CREATE DATABASE IF NOT EXISTS \\\`${MYSQL_DATABASE}\\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci; CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}'; GRANT ALL ON \\\`${MYSQL_DATABASE}\\\`.* TO '${MYSQL_USER}'@'%'; FLUSH PRIVILEGES;\""
+
     docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -u\"${MYSQL_USER}\" -p\"${MYSQL_PASSWORD}\" \"${MYSQL_DATABASE}\" < /ddl.sql"
-    echo "DDL re-executed after repairing user/grants."
+
+    echo "✅ DDL re-executed after repairing user and grants."
   else
-    echo "WARNING: Root login failed; if this is a reused data dir, remove the container with volumes: 'docker rm -fv ${MYSQL_CONTAINER}' and re-run this script." >&2
+    echo "❌ Root login failed. If this is a reused data directory, remove the container with volumes and run again:" >&2
+    echo "   docker rm -fv ${MYSQL_CONTAINER}" >&2
     exit 1
   fi
 fi
 
 SEED_PATH=./src/test/resources/seed-data.sql
+
 if [[ -f "${SEED_PATH}" ]]; then
-  echo "Copying seed data into MySQL container and executing..."
+  echo "🌱 Copying seed data into MySQL container and executing..."
   docker cp "${SEED_PATH}" "${MYSQL_CONTAINER}:/seed-data.sql"
+
   docker exec "${MYSQL_CONTAINER}" bash -lc "mysql -u\"${MYSQL_USER}\" -p\"${MYSQL_PASSWORD}\" \"${MYSQL_DATABASE}\" < /seed-data.sql"
-  echo "Seed data executed successfully."
+
+  echo "✅ Seed data executed successfully."
 else
-  echo "No seed-data.sql file found at ${SEED_PATH}, skipping seed step."
+  echo "ℹ️ No seed-data.sql file found at ${SEED_PATH}; skipping seed step."
 fi
 
 if ! docker ps --format '{{.Names}}' | grep -q "^${VAULT_CONTAINER}$"; then
   if docker ps -a --format '{{.Names}}' | grep -q "^${VAULT_CONTAINER}$"; then
-    echo "Removing existing stopped container: ${VAULT_CONTAINER}"
+    echo "🧹 Removing existing stopped container: ${VAULT_CONTAINER}"
     docker rm -f "${VAULT_CONTAINER}" >/dev/null
   fi
-  echo "Pulling ${VAULT_IMAGE} ..."
+
+  echo "📦 Pulling ${VAULT_IMAGE}..."
   docker pull "${VAULT_IMAGE}"
-  echo "Starting Vault (dev mode) container: ${VAULT_CONTAINER}"
+
+  echo "🔐 Starting Vault container in development mode: ${VAULT_CONTAINER}"
   docker run -d --name "${VAULT_CONTAINER}" \
     -p ${VAULT_PORT}:8200 \
     -e VAULT_DEV_ROOT_TOKEN_ID="${VAULT_TOKEN}" \
@@ -131,17 +155,25 @@ if ! docker ps --format '{{.Names}}' | grep -q "^${VAULT_CONTAINER}$"; then
     "${VAULT_IMAGE}" \
     server -dev -dev-root-token-id="${VAULT_TOKEN}" -dev-listen-address=0.0.0.0:8200 >/dev/null
 else
-  echo "Vault container '${VAULT_CONTAINER}' already running."
+  echo "✅ Vault container '${VAULT_CONTAINER}' is already running."
 fi
 
+echo "⏳ Waiting briefly for Vault to initialize..."
 sleep 2
 
-VAULT_EXEC=(docker exec -e VAULT_ADDR="http://127.0.0.1:${VAULT_PORT}" -e VAULT_TOKEN="${VAULT_TOKEN}" "${VAULT_CONTAINER}" vault)
+VAULT_EXEC=(
+  docker exec
+  -e VAULT_ADDR="http://127.0.0.1:${VAULT_PORT}"
+  -e VAULT_TOKEN="${VAULT_TOKEN}"
+  "${VAULT_CONTAINER}"
+  vault
+)
 
 if "${VAULT_EXEC[@]}" kv get -format=json "${SECRET_PATH}" >/dev/null 2>&1; then
-  echo "Vault secret '${SECRET_PATH}' already exists."
+  echo "✅ Vault secret '${SECRET_PATH}' already exists."
 else
-  echo "Creating Vault secret '${SECRET_PATH}' with datasource values..."
+  echo "🔐 Creating Vault secret '${SECRET_PATH}' with datasource values..."
+
   "${VAULT_EXEC[@]}" kv put "${SECRET_PATH}" \
     spring.datasource.url="jdbc:mysql://127.0.0.1:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
     spring.datasource.username="${MYSQL_USER}" \
@@ -153,18 +185,30 @@ else
     spring.datasource.hikari.minimum-idle="2" \
     spring.datasource.hikari.maximum-pool-size="10" \
     spring.datasource.hikari.pool-name="HikariPool"
+
+  echo "✅ Vault datasource secret created successfully."
 fi
 
 if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-  echo "Patching OpenAI settings into Vault..."
+  echo "🔑 Patching OpenAI settings into Vault..."
+
   "${VAULT_EXEC[@]}" kv patch "${SECRET_PATH}" \
     helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" \
     helpdesk.ai.openai.model="${OPENAI_MODEL:-gpt-5.2}"
+
+  echo "✅ OpenAI settings patched into Vault."
 else
-  echo "OPENAI_API_KEY is not set. Skipping OpenAI Vault patch."
+  echo "ℹ️ OPENAI_API_KEY is not set; skipping OpenAI Vault patch."
 fi
 
+echo "🔍 Current Vault secret metadata and values:"
 "${VAULT_EXEC[@]}" kv get "${SECRET_PATH}"
 
-echo "Running mvn clean install ..."
+echo
+echo "🔨 Running Maven clean install..."
 mvn clean install
+
+echo
+echo "══════════════════════════════════════════════"
+echo "✅ Build completed successfully."
+echo "══════════════════════════════════════════════"
