@@ -59,7 +59,7 @@ The active AI provider is selected in `src/main/resources/application.yml` with 
 
 If you use LM Studio, run it locally and point it at `http://localhost:1234/v1` or update `helpdesk.ai.lm-studio.base-url`. The recommended model for MCP tests is `unsloth/Qwen3-Coder-30B-A3-B-Instruct-GGUF`.
 
-If you use OpenAI, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`; those scripts patch the key into Vault automatically. You can also set `OPENAI_MODEL` if needed.
+If you use OpenAI, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`; those scripts patch the key into Vault automatically. The model stays in `application.yml`.
 
 ## Quick start
 
@@ -220,7 +220,6 @@ Use `openai` for hosted API usage or `lm-studio` for local testing.
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
-export OPENAI_MODEL="gpt-5.2"
 ```
 
 If you want to patch Vault manually:
@@ -232,9 +231,7 @@ docker exec \
   vault \
   vault kv patch secret/helpdesk \
     helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" \
-    helpdesk.ai.openai.model="${OPENAI_MODEL}" \
-    spring.ai.openai.api-key="${OPENAI_API_KEY}" \
-    spring.ai.openai.chat.options.model="${OPENAI_MODEL}"
+    spring.ai.openai.api-key="${OPENAI_API_KEY}"
 ```
 
 Check the secret:

@@ -14,7 +14,6 @@ echo "🔑 Using VAULT_TOKEN=$VAULT_TOKEN"
 VAULT_EXEC=(docker exec -e VAULT_ADDR="${VAULT_ADDR}" -e VAULT_TOKEN="${VAULT_TOKEN}" vault vault)
 
 SECRET_PATH="secret/helpdesk"
-OPENAI_MODEL_VALUE="${OPENAI_MODEL:-gpt-5.2}"
 
 if "${VAULT_EXEC[@]}" kv get -format=json "$SECRET_PATH" >/dev/null 2>&1; then
   echo "✅ Vault secret '$SECRET_PATH' already exists."
@@ -38,9 +37,7 @@ if [ -n "${OPENAI_API_KEY:-}" ]; then
   echo "🔑 Patching OpenAI settings into Vault..."
   "${VAULT_EXEC[@]}" kv patch "$SECRET_PATH" \
     helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" \
-    helpdesk.ai.openai.model="${OPENAI_MODEL_VALUE}" \
-    spring.ai.openai.api-key="${OPENAI_API_KEY}" \
-    spring.ai.openai.chat.options.model="${OPENAI_MODEL_VALUE}"
+    spring.ai.openai.api-key="${OPENAI_API_KEY}"
   echo "✅ OpenAI settings patched."
 else
   echo "ℹ️ OPENAI_API_KEY is not set. Skipping OpenAI Vault patch."
