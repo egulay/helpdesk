@@ -193,8 +193,7 @@ if [[ -n "${OPENAI_API_KEY:-}" ]]; then
   echo "🔑 Patching OpenAI settings into Vault..."
 
   "${VAULT_EXEC[@]}" kv patch "${SECRET_PATH}" \
-    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" \
-    helpdesk.ai.openai.model="${OPENAI_MODEL:-gpt-5.2}"
+    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}"
 
   echo "✅ OpenAI settings patched into Vault."
 else
