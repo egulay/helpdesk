@@ -1,3 +1,4 @@
+> [!WARNING]
 > 🇹🇷 **Önemli Not**
 >
 > Bu proje eğitim amacıyla paylaşılmıştır.
