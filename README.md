@@ -59,7 +59,7 @@ The active AI provider is selected in `src/main/resources/application.yml` with 
 
 If you use LM Studio, run it locally and point it at `http://localhost:1234/v1` or update `helpdesk.ai.lm-studio.base-url`. The recommended model for MCP tests is `unsloth/Qwen3-Coder-30B-A3-B-Instruct-GGUF`.
 
-If you use OpenAI, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`; those scripts patch the key into Vault automatically. The model stays in `application.yml`.
+If you use OpenAI, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`; those scripts patch that value into Vault as `helpdesk.ai.openai.api-key`. The model stays in `application.yml`.
 
 ## Quick start
 
@@ -76,7 +76,7 @@ The fastest way to build and run everything is:
 - seeds sample data
 - starts Vault
 - creates the required Vault secret
-- patches OpenAI settings into Vault if `OPENAI_API_KEY` is set
+- patches the OpenAI API key into Vault at `helpdesk.ai.openai.api-key` if `OPENAI_API_KEY` is set
 - generates Java sources from protobuf files
 - runs the tests
 - compiles the project
@@ -216,13 +216,13 @@ helpdesk:
 
 Use `openai` for hosted API usage or `lm-studio` for local testing.
 
-### 8) Store OpenAI settings in Vault
+### 8) Store the OpenAI API key in Vault
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
 ```
 
-If you want to patch Vault manually:
+If you want to patch Vault manually, store it only once under `helpdesk.ai.openai.api-key`:
 
 ```bash
 docker exec \
@@ -230,8 +230,7 @@ docker exec \
   -e VAULT_TOKEN=root \
   vault \
   vault kv patch secret/helpdesk \
-    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" \
-    spring.ai.openai.api-key="${OPENAI_API_KEY}"
+    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}"
 ```
 
 Check the secret:
@@ -269,7 +268,7 @@ spring:
 `run.sh`:
 
 - ensures `secret/helpdesk` exists
-- patches OpenAI settings into Vault if `OPENAI_API_KEY` is available
+- patches the OpenAI API key into Vault at `helpdesk.ai.openai.api-key` if `OPENAI_API_KEY` is available
 - prints the Vault secret for verification
 - starts Spring Boot with `mvn spring-boot:run`
 

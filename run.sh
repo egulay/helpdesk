@@ -36,8 +36,7 @@ fi
 if [ -n "${OPENAI_API_KEY:-}" ]; then
   echo "🔑 Patching OpenAI settings into Vault..."
   "${VAULT_EXEC[@]}" kv patch "$SECRET_PATH" \
-    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" \
-    spring.ai.openai.api-key="${OPENAI_API_KEY}"
+    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}"
   echo "✅ OpenAI settings patched."
 else
   echo "ℹ️ OPENAI_API_KEY is not set. Skipping OpenAI Vault patch."
