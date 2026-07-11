@@ -1,15 +1,13 @@
-<table>
-<tr>
-<td>
-<span style="font-size:28px;">🇹🇷</span> 
-
-Bu proje eğitim amacıyla paylaşılmıştır.
-
-İçerisinde bilinçli olarak bırakılmış mantıksal ve mimari eksiklikler vardır.
-
-Doğrudan kopyalanıp ticari ürün olarak sunulması tavsiye edilmez. Böyle bir tercihin en büyük maliyeti teknik borç değil, ticari itibardır.
-</td>
-</tr>
+<table style="border:none;border-collapse:collapse;">
+  <tr style="border:none;">
+    <td style="border:none;" valign="top" width="36">🇹🇷</td>
+    <td style="border:none;" valign="top">
+      Bu proje eğitim amacıyla paylaşılmıştır.<br><br>
+      İçerisinde bilinçli olarak bırakılmış mantıksal ve mimari eksiklikler vardır.<br><br>
+      Doğrudan kopyalanıp ticari ürün olarak sunulması tavsiye edilmez.
+      Böyle bir tercihin en büyük maliyeti teknik borç değil, ticari itibardır.
+    </td>
+  </tr>
 </table>
 
 # Dummy Helpdesk API
