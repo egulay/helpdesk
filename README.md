@@ -63,25 +63,23 @@ If you use OpenAI, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`
 
 ## Quick start
 
-The fastest way to prepare the environment, run the tests, and build the project is:
+Use `build.sh` to provision the local services, generate code, run the test suite, and build the project:
 
 ```bash
 ./build.sh
 ```
 
-`build.sh`:
+`build.sh` will:
 
-- starts MySQL
-- creates the database schema
-- seeds sample data
-- starts Vault
-- creates the required Vault secret
-- patches the OpenAI API key into Vault at `helpdesk.ai.openai.api-key` if `OPENAI_API_KEY` is set
-- generates Java sources from protobuf files
-- runs the tests
-- compiles the project
+- pull the MySQL Docker image if needed, then start MySQL locally
+- create the database schema and seed sample data
+- pull the Vault Docker image if needed, then start Vault locally, and create the required Vault secret with Spring datasource settings
+- copy the OpenAI API key into Vault at `helpdesk.ai.openai.api-key` if `OPENAI_API_KEY` is set
+- generate Java sources from protobuf files
+- run the tests
+- compile the project
 
-To start the application after that, run `./run.sh`.
+When the build finishes, start the application with `./run.sh`.
 
 ## Manual setup
 
@@ -186,7 +184,7 @@ export VAULT_TOKEN=root
 
 ### 6) Store database settings in Vault
 
-Spring reads database settings from `secret/helpdesk`.
+Spring reads its database connection settings from `secret/helpdesk`.
 
 ```bash
 docker exec \
