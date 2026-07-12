@@ -63,7 +63,7 @@ If you use OpenAI, export `OPENAI_API_KEY` before running `build.sh` or `run.sh`
 
 ## Quick start
 
-The fastest way to build and run everything is:
+The fastest way to prepare the environment, run the tests, and build the project is:
 
 ```bash
 ./build.sh
@@ -80,6 +80,8 @@ The fastest way to build and run everything is:
 - generates Java sources from protobuf files
 - runs the tests
 - compiles the project
+
+To start the application after that, run `./run.sh`.
 
 ## Manual setup
 
@@ -284,7 +286,7 @@ MCP Tool -> Existing Service Layer -> Repository -> Database
 
 MCP tools expose JSON-friendly DTOs rather than JPA entities to keep responses simple and avoid serialization issues.
 
-For AI-assisted MCP operations, the server uses the configured provider from `helpdesk.ai.provider`. OpenAI settings come from Vault; LM Studio can be used locally without an API key.
+For AI-assisted MCP operations, the server uses the configured provider from `helpdesk.ai.provider`. The OpenAI API key comes from Vault; provider and model settings stay in `application.yml`. LM Studio can be used locally without an API key.
 
 ## Testing the embedded MCP server
 
