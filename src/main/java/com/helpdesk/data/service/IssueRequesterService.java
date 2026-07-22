@@ -18,11 +18,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 
 @Service
+@Transactional(readOnly = true)
 public class IssueRequesterService {
     final IssueRequesterRepository issueRequesterRepository;
 
@@ -235,6 +237,7 @@ public class IssueRequesterService {
         }
     }
 
+    @Transactional
     public IssueRequesterModel toggleActivation(Integer id) {
         try {
             val requester = getRequester(id);
@@ -257,6 +260,7 @@ public class IssueRequesterService {
         }
     }
 
+    @Transactional
     public IssueRequesterModel save(IssueRequesterModel model) {
         try {
             val id = model.getId();
@@ -270,20 +274,21 @@ public class IssueRequesterService {
                                     .concat(",isActive:").concat(String.valueOf(model.getIsActive())));
                 }
 
-                return issueRequesterRepository.save(model);
+                return issueRequesterRepository.saveAndFlush(model);
             }
 
             if (!issueRequesterRepository.existsById(id)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "requesterId:".concat(id.toString()));
             }
 
-            return issueRequesterRepository.save(model); // UPDATE
+            return issueRequesterRepository.saveAndFlush(model); // UPDATE
 
         } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
+    @Transactional
     public IssueRequesterModel hardDelete(Integer id) {
         try {
             val requesterToHardDelete = getRequester(id);
@@ -298,6 +303,7 @@ public class IssueRequesterService {
     }
 
     // WARNING: TEST PURPOSES ONLY! DO NOT IMPLEMENT AN ENDPOINT (at least for now) >>
+    @Transactional
     public void hardDeleteAll() {
         try {
             issueRequesterRepository.deleteAll();

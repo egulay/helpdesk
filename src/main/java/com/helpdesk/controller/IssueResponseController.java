@@ -46,7 +46,7 @@ public class IssueResponseController {
         this.issueRequestService = issueRequestService;
     }
 
-    @RequestMapping(value = "/v1/issue_responses/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = {"/api/v1/issue-responses/{id}", "/v1/issue_responses/{id}"}, method = RequestMethod.GET)
     private ResponseEntity<IssueResponse> getIssueResponsesByIdV1(@PathVariable String id) {
         log.info("Calling: getIssueResponsesByIdV1 >> ".concat(id));
 
@@ -55,7 +55,7 @@ public class IssueResponseController {
         return ResponseEntity.ok(mapIssueResponse(issueResponse));
     }
 
-    @RequestMapping(value = "/v1/issue_responses/find_all", method = RequestMethod.GET)
+    @RequestMapping(value = {"/api/v1/issue-responses", "/v1/issue_responses/find_all"}, method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueResponsesByCreatedBeforeAndCreatedAfter(
             @RequestParam(defaultValue = "") String createdBefore,
             @RequestParam(defaultValue = "") String createdAfter,
@@ -153,7 +153,7 @@ public class IssueResponseController {
         return ResponseEntity.ok(mapPaged(result));
     }
 
-    @RequestMapping(value = "/v1/issue_responses/delete/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = {"/api/v1/issue-responses/{id}", "/v1/issue_responses/delete/{id}"}, method = RequestMethod.DELETE)
     private ResponseEntity<IssueResponse> deleteIssueResponseV1(@PathVariable String id) {
         log.info("Calling: deleteIssueResponseV1 >> ".concat(id));
 
@@ -163,9 +163,10 @@ public class IssueResponseController {
     }
 
 
-    @RequestMapping(value = "/v1/issue_responses/save", method = RequestMethod.POST)
+    @RequestMapping(value = {"/api/v1/issue-responses", "/v1/issue_responses/save"}, method = RequestMethod.POST)
     private ResponseEntity<IssueResponse> saveIssueResponseV1(@RequestBody IssueResponse issueResponse) {
-        log.info("Calling: saveIssueResponseV1 >> ".concat(issueResponse.toString()));
+        log.info("Saving issue response id={} requestId={} requesterId={}",
+                issueResponse.getId(), issueResponse.getRequestId(), issueResponse.getRequesterId());
 
         if (!issueRequesterService.isExistsAndActive(issueResponse.getRequesterId(), true)) {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,

@@ -1,5 +1,6 @@
 helpdesk:
   ai:
+    enabled: true
     provider: lm-studio
     lm-studio:
       base-url: http://localhost:1234/v1
@@ -7,14 +8,18 @@ helpdesk:
     openai:
       base-url: https://api.openai.com/v1
       model: gpt-5.2
+  mcp:
+    allow-mutations: false
 
 spring:
   application:
     name: helpdesk
-  config:
-    import: optional:vault://
   main:
     banner-mode: console
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
   mvc:
     async:
       request-timeout: 300000 # 5 minutes
@@ -34,23 +39,36 @@ spring:
         name: helpdesk-api-mcp-server
         version: 1.0.0
         type: SYNC
-        sse-endpoint: /sse
-        sse-message-endpoint: /mcp/message
+        protocol: STREAMABLE
+        streamable-http:
+          mcp-endpoint: /mcp
         request-timeout: 5m
 
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: ${HELPDESK_OPENAPI_ENABLED:true}
+  swagger-ui:
+    enabled: ${HELPDESK_OPENAPI_ENABLED:true}
   show-actuator: true
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,mappings
+        include: ${MANAGEMENT_ENDPOINTS:health,info}
 
 server:
   port: 8888
+  http2:
+    enabled: true
   error:
-    include-message: always
-    include-binding-errors: always
+    include-message: never
+    include-binding-errors: never
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "!test"
+    import: optional:vault://

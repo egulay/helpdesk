@@ -18,11 +18,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 
 @Service
+@Transactional(readOnly = true)
 public class IssueResponseService {
     final IssueResponseRepository issueResponseRepository;
 
@@ -198,25 +200,27 @@ public class IssueResponseService {
         }
     }
 
+    @Transactional
     public IssueResponseModel save(IssueResponseModel model) {
         try {
             val id = model.getId();
             if (id == null || id <= 0) {
                 model.setId(null);
-                return issueResponseRepository.save(model);
+                return issueResponseRepository.saveAndFlush(model);
             }
 
             if (!issueResponseRepository.existsById(id)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "responseId:".concat(id.toString()));
             }
 
-            return issueResponseRepository.save(model);
+            return issueResponseRepository.saveAndFlush(model);
 
         } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
+    @Transactional
     public IssueResponseModel hardDelete(Integer id) {
         try {
             val responseToHardDelete = getResponse(id);
@@ -231,6 +235,7 @@ public class IssueResponseService {
     }
 
     // WARNING: TEST PURPOSES ONLY! DO NOT IMPLEMENT AN ENDPOINT (at least for now) >>
+    @Transactional
     public void hardDeleteAll() {
         try {
             issueResponseRepository.deleteAll();

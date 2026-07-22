@@ -1,5 +1,6 @@
 package com.helpdesk.controller;
 
+import com.google.protobuf.util.JsonFormat;
 import com.helpdesk.protoGen.*;
 import com.helpdesk.RestConfiguration;
 import com.helpdesk.TestBase;
@@ -10,6 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -112,6 +115,114 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
     }
 
     @Test
+    public void get_issue_request_by_id_as_json_test() throws Exception {
+        insertNewIssueRequester();
+        insertNewIssueRequest1();
+
+        val response = webClient.get()
+                .uri("/api/v1/issue-requests/{id}", newIssueRequest1.getId())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toEntity(String.class)
+                .block();
+
+        assertNotNull(response);
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertNotNull(response.getBody());
+
+        val builder = IssueRequest.newBuilder();
+        JsonFormat.parser().merge(response.getBody(), builder);
+        val body = builder.build();
+
+        assertEquals(newIssueRequest1.getId().intValue(), body.getId());
+        assertEquals(newIssueRequester.getId().intValue(), body.getRequesterId());
+        assertEquals(newIssueRequest1.getBody(), body.getBody());
+        assertFalse(body.getIsSolved().getData());
+    }
+
+    @Test
+    public void get_issue_request_by_id_as_binary_protobuf_test() throws Exception {
+        insertNewIssueRequester();
+        insertNewIssueRequest1();
+
+        val protobufMediaType = MediaType.parseMediaType("application/x-protobuf");
+        val response = webClient.get()
+                .uri("/api/v1/issue-requests/{id}", newIssueRequest1.getId())
+                .accept(protobufMediaType)
+                .retrieve()
+                .toEntity(byte[].class)
+                .block();
+
+        assertNotNull(response);
+        assertTrue(protobufMediaType.isCompatibleWith(response.getHeaders().getContentType()));
+        assertNotNull(response.getBody());
+
+        val body = IssueRequest.parseFrom(response.getBody());
+        assertEquals(newIssueRequest1.getId().intValue(), body.getId());
+        assertEquals(newIssueRequester.getId().intValue(), body.getRequesterId());
+        assertEquals(newIssueRequest1.getBody(), body.getBody());
+        assertFalse(body.getIsSolved().getData());
+    }
+
+    @Test
+    public void create_issue_request_from_json_and_return_json_test() throws Exception {
+        insertNewIssueRequester();
+        val json = """
+                {
+                  "requesterId": %d,
+                  "body": "JSON issue request",
+                  "isSolved": {"data": false}
+                }
+                """.formatted(newIssueRequester.getId());
+
+        val response = webClient.post()
+                .uri("/api/v1/issue-requests")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(json)
+                .retrieve()
+                .toEntity(String.class)
+                .block();
+
+        assertNotNull(response);
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertNotNull(response.getBody());
+
+        val builder = IssueRequest.newBuilder();
+        JsonFormat.parser().merge(response.getBody(), builder);
+        val body = builder.build();
+
+        assertTrue(body.getId() > 0);
+        assertEquals(newIssueRequester.getId().intValue(), body.getRequesterId());
+        assertEquals("JSON issue request", body.getBody());
+        assertFalse(body.getIsSolved().getData());
+    }
+
+    @Test
+    public void get_missing_issue_request_as_binary_protobuf_error_test() throws Exception {
+        val missingId = Integer.MAX_VALUE;
+        val protobufMediaType = MediaType.parseMediaType("application/x-protobuf");
+
+        try {
+            webClient.get()
+                    .uri("/api/v1/issue-requests/{id}", missingId)
+                    .accept(protobufMediaType)
+                    .retrieve()
+                    .toEntity(byte[].class)
+                    .block();
+            fail("Expected a not-found response");
+        } catch (WebClientResponseException ex) {
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertTrue(protobufMediaType.isCompatibleWith(ex.getHeaders().getContentType()));
+
+            val error = ApiError.parseFrom(ex.getResponseBodyAsByteArray());
+            assertEquals(HttpStatus.NOT_FOUND.value(), error.getStatus());
+            assertThat(error.getMessage()).contains(String.valueOf(missingId));
+            assertEquals("/api/v1/issue-requests/" + missingId, error.getPath());
+        }
+    }
+
+    @Test
     public void get_issue_request_by_id_with_exception_test() {
         val id = Integer.valueOf(RandomStringUtils.random(5, false, true));
         val url = RestConfiguration.LOCALHOST
@@ -176,6 +287,7 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
         try {
             webClient.get()
                     .uri(toRelative(url))
+                    .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .toEntity(PagedData.class)
                     .block();
@@ -223,6 +335,7 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
         try {
             webClient.get()
                     .uri(toRelative(url))
+                    .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .toEntity(PagedData.class)
                     .block();
@@ -273,6 +386,7 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
         try {
             webClient.get()
                     .uri(toRelative(url))
+                    .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .toEntity(PagedData.class)
                     .block();
@@ -332,6 +446,7 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
         try {
             webClient.get()
                     .uri(toRelative(url))
+                    .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .toEntity(PagedData.class)
                     .block();
@@ -388,6 +503,7 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
         try {
             webClient.get()
                     .uri(toRelative(url))
+                    .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .toEntity(PagedData.class)
                     .block();
@@ -486,6 +602,7 @@ public class IssueRequestControllerIntegrationTests extends TestBase {
         try {
             webClient.delete()
                     .uri(toRelative(url))
+                    .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .toEntity(IssueRequest.class)
                     .block();

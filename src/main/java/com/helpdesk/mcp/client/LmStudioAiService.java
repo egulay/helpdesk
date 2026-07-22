@@ -4,17 +4,12 @@ import com.openai.client.OpenAIClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@ConditionalOnProperty(
-        prefix = "helpdesk.ai",
-        name = "provider",
-        havingValue = "lm-studio",
-        matchIfMissing = true
-)
+@ConditionalOnExpression("${helpdesk.ai.enabled:true} and '${helpdesk.ai.provider:lm-studio}' == 'lm-studio'")
 public class LmStudioAiService extends AbstractAiService {
 
     public LmStudioAiService(

@@ -9,23 +9,27 @@ import com.helpdesk.mcp.dto.IssueRequesterToolResponse;
 import com.helpdesk.mcp.dto.PagedToolResponse;
 import com.helpdesk.mcp.util.McpDateParser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IssueRequesterTools {
 
     private final IssueRequesterService issueRequesterService;
 
     @Tool(description = "Find issue requester by id")
     public IssueRequesterToolResponse findIssueRequesterById(Integer id) {
+        log.info("Calling MCP tool: findIssueRequesterById >> Requester Id: {}", id);
         return toResponse(issueRequesterService.findById(id));
     }
 
     @Tool(description = "Find issue requester by id and active status")
     public IssueRequesterToolResponse findIssueRequesterByIdAndActiveStatus(Integer id, boolean isActive) {
+        log.info("Calling MCP tool: findIssueRequesterByIdAndActiveStatus >> Requester Id: {}, Active: {}", id, isActive);
         return toResponse(issueRequesterService.findById(id, isActive));
     }
 
@@ -36,6 +40,7 @@ public class IssueRequesterTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findAllIssueRequesters >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAll(page, size, sortBy, sortDirection));
     }
 
@@ -47,6 +52,7 @@ public class IssueRequesterTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestersByFullName >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAllByFullNameContainingIgnoreCase(
                 fullName,
                 page,
@@ -66,6 +72,7 @@ public class IssueRequesterTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestersByFullNameAndCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAllByFullNameContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
                 fullName,
                 McpDateParser.fromIsoInstant(createdBefore),
@@ -85,6 +92,7 @@ public class IssueRequesterTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestersByEmail >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAllByEmailContainingIgnoreCase(
                 email,
                 page,
@@ -104,6 +112,7 @@ public class IssueRequesterTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestersByEmailAndCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAllByEmailContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
                 email,
                 McpDateParser.fromIsoInstant(createdBefore),
@@ -125,6 +134,7 @@ public class IssueRequesterTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestersByCreatedDateRangeAndActiveStatus >> Active: {}, Page: {}, Size: {}", isActive, page, size);
         return toPagedResponse(issueRequesterService.findAllByCreatedBeforeAndCreatedAfterAndIsActive(
                 McpDateParser.fromIsoInstant(createdBefore),
                 McpDateParser.fromIsoInstant(createdAfter),
@@ -145,6 +155,7 @@ public class IssueRequesterTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestersByCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAllByCreatedBeforeAndCreatedAfter(
                 McpDateParser.fromIsoInstant(createdBefore),
                 McpDateParser.fromIsoInstant(createdAfter),
@@ -155,22 +166,20 @@ public class IssueRequesterTools {
         ));
     }
 
-    @Tool(description = "Toggle activation status of an issue requester")
     public IssueRequesterToolResponse toggleIssueRequesterActivation(Integer id) {
         return toResponse(issueRequesterService.toggleActivation(id));
     }
 
     @Tool(description = "Check whether an issue requester exists with active status")
     public Boolean issueRequesterExistsAndActive(Integer id, Boolean isActive) {
+        log.info("Calling MCP tool: issueRequesterExistsAndActive >> Requester Id: {}, Active: {}", id, isActive);
         return issueRequesterService.isExistsAndActive(id, isActive);
     }
 
-    @Tool(description = "Save or update an issue requester")
     public IssueRequesterToolResponse saveIssueRequester(IssueRequesterToolRequest request) {
         return toResponse(issueRequesterService.save(toModel(request)));
     }
 
-    @Tool(description = "Hard delete an issue requester by id")
     public IssueRequesterToolResponse hardDeleteIssueRequester(Integer id) {
         return toResponse(issueRequesterService.hardDelete(id));
     }
