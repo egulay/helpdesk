@@ -3,7 +3,6 @@ package com.helpdesk;
 import com.helpdesk.data.service.IssueRequestService;
 import com.helpdesk.data.service.IssueRequesterService;
 import com.helpdesk.data.service.IssueResponseService;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,10 +19,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SuppressWarnings("rawtypes")
 @DirtiesContext
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = HelpdeskApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        classes = HelpdeskApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 @ActiveProfiles("test")
 @Testcontainers
-@Ignore
 public abstract class TestBase {
     private static final MySQLContainer container;
     private static final String IMAGE_VERSION = "mysql:8.0";
@@ -50,7 +51,6 @@ public abstract class TestBase {
         container = new MySQLContainer<>(IMAGE_VERSION)
                 .withUsername("test_user")
                 .withPassword("test_password")
-                .withInitScript("ddl.sql")
                 .withDatabaseName("help_desk");
         container.start();
     }
@@ -62,4 +62,3 @@ public abstract class TestBase {
         dynamicPropertyRegistry.add("spring.datasource.password", container::getPassword);
     }
 }
-

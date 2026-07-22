@@ -30,7 +30,7 @@ public class IssueRequesterController {
         this.issueRequesterService = issueRequesterService;
     }
 
-    @RequestMapping(value = "/v1/issue_requesters/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = {"/api/v1/issue-requesters/{id}", "/v1/issue_requesters/{id}"}, method = RequestMethod.GET)
     private ResponseEntity<IssueRequester> getIssueRequesterByIdV1(
             @PathVariable String id,
             @RequestParam(defaultValue = "") String issueRequestIsSolved) {
@@ -44,7 +44,7 @@ public class IssueRequesterController {
         return ResponseEntity.ok(mapIssueRequester(issueRequester));
     }
 
-    @RequestMapping(value = "/v1/issue_requesters/find_all", method = RequestMethod.GET)
+    @RequestMapping(value = {"/api/v1/issue-requesters", "/v1/issue_requesters/find_all"}, method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueRequestersByCreatedBeforeAndCreatedAfter(
             @RequestParam(defaultValue = "") String createdBefore,
             @RequestParam(defaultValue = "") String createdAfter,
@@ -156,7 +156,7 @@ public class IssueRequesterController {
         return ResponseEntity.ok(mapPaged(result));
     }
 
-    @RequestMapping(value = "/v1/issue_requesters/toggle_activation/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = {"/api/v1/issue-requesters/{id}/activation", "/v1/issue_requesters/toggle_activation/{id}"}, method = RequestMethod.PUT)
     private ResponseEntity<IssueRequester> toggleIssueRequesterActivationV1(@PathVariable String id) {
         log.info("Calling: toggleIssueRequesterActivationV1 >> ".concat(id));
 
@@ -165,7 +165,7 @@ public class IssueRequesterController {
         return ResponseEntity.ok(mapIssueRequester(requester));
     }
 
-    @RequestMapping(value = "/v1/issue_requesters/delete/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = {"/api/v1/issue-requesters/{id}", "/v1/issue_requesters/delete/{id}"}, method = RequestMethod.DELETE)
     private ResponseEntity<IssueRequester> deleteIssueRequesterV1(@PathVariable String id) {
         log.info("Calling: deleteIssueRequesterV1 >> ".concat(id));
 
@@ -174,9 +174,9 @@ public class IssueRequesterController {
         return ResponseEntity.ok(mapIssueRequester(result));
     }
 
-    @RequestMapping(value = "/v1/issue_requesters/save", method = RequestMethod.POST)
+    @RequestMapping(value = {"/api/v1/issue-requesters", "/v1/issue_requesters/save"}, method = RequestMethod.POST)
     private ResponseEntity<IssueRequester> saveIssueRequesterV1(@RequestBody IssueRequester issueRequester) {
-        log.info("Calling: saveIssueRequesterV1 >> ".concat(issueRequester.toString()));
+        log.info("Saving issue requester id={}", issueRequester.getId());
 
         val saved = issueRequesterService.save(IssueRequesterModel
                 .builder()

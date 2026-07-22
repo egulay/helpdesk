@@ -1,57 +1,82 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-echo "══════════════════════════════════════════════"
-echo "🚀 Helpdesk Application Launcher"
-echo "══════════════════════════════════════════════"
+VAULT_CONTAINER=${VAULT_CONTAINER:-vault}
+VAULT_PORT=${VAULT_PORT:-8200}
+VAULT_TOKEN=${VAULT_TOKEN:-root}
+SECRET_PATH=${SECRET_PATH:-secret/helpdesk}
 
-export VAULT_ADDR=${VAULT_ADDR:-http://127.0.0.1:8200}
-export VAULT_TOKEN=${VAULT_TOKEN:-root}
+export VAULT_ADDR=${VAULT_ADDR:-http://127.0.0.1:${VAULT_PORT}}
+export VAULT_TOKEN
 
-echo "🔐 Using VAULT_ADDR=$VAULT_ADDR"
-echo "🔑 Using VAULT_TOKEN=$VAULT_TOKEN"
+printf '%s\n' \
+  '══════════════════════════════════════════════' \
+  '🚀 Helpdesk Application Launcher' \
+  '══════════════════════════════════════════════'
 
-VAULT_EXEC=(docker exec -e VAULT_ADDR="${VAULT_ADDR}" -e VAULT_TOKEN="${VAULT_TOKEN}" vault vault)
+command -v docker >/dev/null 2>&1 || {
+  printf '❌ Docker is required but was not found.\n' >&2
+  exit 1
+}
 
-SECRET_PATH="secret/helpdesk"
-
-if "${VAULT_EXEC[@]}" kv get -format=json "$SECRET_PATH" >/dev/null 2>&1; then
-  echo "✅ Vault secret '$SECRET_PATH' already exists."
-else
-  echo "🔐 Vault secret '$SECRET_PATH' not found. Creating with default datasource values..."
-  "${VAULT_EXEC[@]}" kv put "$SECRET_PATH" \
-    spring.datasource.url="${SPRING_DATASOURCE_URL:-jdbc:mysql://127.0.0.1:3306/help_desk?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}" \
-    spring.datasource.username="${SPRING_DATASOURCE_USERNAME:-help_user}" \
-    spring.datasource.password="${SPRING_DATASOURCE_PASSWORD:-help_pass}" \
-    spring.datasource.driver-class-name="${SPRING_DATASOURCE_DRIVER_CLASS_NAME:-com.mysql.cj.jdbc.Driver}" \
-    spring.jpa.properties.hibernate.dialect="${SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT:-org.hibernate.dialect.MySQLDialect}" \
-    spring.datasource.hikari.auto-commit="${SPRING_DATASOURCE_HIKARI_AUTO_COMMIT:-false}" \
-    spring.datasource.hikari.transaction-isolation="${SPRING_DATASOURCE_HIKARI_TRANSACTION_ISOLATION:-TRANSACTION_READ_COMMITTED}" \
-    spring.datasource.hikari.minimum-idle="${SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE:-2}" \
-    spring.datasource.hikari.maximum-pool-size="${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:-10}" \
-    spring.datasource.hikari.pool-name="${SPRING_DATASOURCE_HIKARI_POOL_NAME:-HikariPool}"
-  echo "✅ Vault datasource secret created."
+if ! docker container inspect "${VAULT_CONTAINER}" >/dev/null 2>&1; then
+  printf '❌ Vault container %s does not exist. Run ./build.sh first.\n' "${VAULT_CONTAINER}" >&2
+  exit 1
 fi
 
-if [ -n "${OPENAI_API_KEY:-}" ]; then
-  echo "🔑 Patching OpenAI settings into Vault..."
-  "${VAULT_EXEC[@]}" kv patch "$SECRET_PATH" \
-    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}"
-  echo "✅ OpenAI settings patched."
-else
-  echo "ℹ️ OPENAI_API_KEY is not set. Skipping OpenAI Vault patch."
+if [[ "$(docker inspect -f '{{.State.Running}}' "${VAULT_CONTAINER}")" != "true" ]]; then
+  printf '▶️ Starting existing Vault container: %s\n' "${VAULT_CONTAINER}"
+  docker start "${VAULT_CONTAINER}" >/dev/null
 fi
 
-echo "🔍 Current Vault configuration:"
-"${VAULT_EXEC[@]}" kv get "$SECRET_PATH"
+# Commands execute inside the Vault container, where Vault always listens on 8200.
+VAULT_EXEC=(
+  docker exec
+  -e VAULT_ADDR=http://127.0.0.1:8200
+  -e VAULT_TOKEN="${VAULT_TOKEN}"
+  "${VAULT_CONTAINER}"
+  vault
+)
 
-echo
-echo "🚀 Starting Spring Boot application..."
-mvn spring-boot:run \
+printf '⏳ Waiting for Vault to be ready'
+VAULT_READY=false
+for _ in {1..40}; do
+  if "${VAULT_EXEC[@]}" status >/dev/null 2>&1; then
+    VAULT_READY=true
+    break
+  fi
+  printf '.'
+  sleep 0.25
+done
+
+if [[ "${VAULT_READY}" != "true" ]]; then
+  printf '\n❌ Vault did not become ready in time.\n' >&2
+  exit 1
+fi
+printf ' - ✅ ready\n'
+
+if ! "${VAULT_EXEC[@]}" kv get -format=json "${SECRET_PATH}" >/dev/null 2>&1; then
+  printf '❌ Vault secret %s does not exist. Run ./build.sh first.\n' "${SECRET_PATH}" >&2
+  exit 1
+fi
+
+printf '✅ Vault configuration is available at %s.\n' "${SECRET_PATH}"
+
+if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+  printf '🔑 Updating the OpenAI API key in Vault...\n'
+  "${VAULT_EXEC[@]}" kv patch "${SECRET_PATH}" \
+    helpdesk.ai.openai.api-key="${OPENAI_API_KEY}" >/dev/null
+  printf '✅ OpenAI API key updated.\n'
+else
+  printf 'ℹ️ OPENAI_API_KEY is not set; the Vault key was not changed.\n'
+fi
+
+printf '🚀 Starting Spring Boot; Flyway will validate and migrate the database...\n'
+./mvnw spring-boot:run \
   -Dspring-boot.run.main-class=com.helpdesk.HelpdeskApplication \
-  -Dspring-boot.run.arguments="--spring.ai.mcp.server.enabled=true"
+  -Dspring-boot.run.arguments=--spring.ai.mcp.server.enabled=true
 
-echo
-echo "══════════════════════════════════════════════"
-echo "✅ Application finished."
-echo "══════════════════════════════════════════════"
+printf '%s\n' \
+  '══════════════════════════════════════════════' \
+  '✅ Application finished.' \
+  '══════════════════════════════════════════════'

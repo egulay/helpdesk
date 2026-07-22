@@ -1,0 +1,11 @@
+syntax = "proto3";
+option java_multiple_files = true;
+package com.helpdesk.protoGen;
+
+message ApiError {
+  int32 status = 1;
+  string error = 2;
+  string message = 3;
+  string path = 4;
+  int64 timestamp = 5;
+}

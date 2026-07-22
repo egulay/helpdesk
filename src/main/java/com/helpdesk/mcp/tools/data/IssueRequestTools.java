@@ -10,12 +10,14 @@ import com.helpdesk.mcp.dto.IssueRequestToolResponse;
 import com.helpdesk.mcp.dto.PagedToolResponse;
 import com.helpdesk.mcp.util.McpDateParser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IssueRequestTools {
 
     private final IssueRequestService issueRequestService;
@@ -23,11 +25,13 @@ public class IssueRequestTools {
 
     @Tool(description = "Find issue request by id")
     public IssueRequestToolResponse findIssueRequestById(Integer id) {
+        log.info("Calling MCP tool: findIssueRequestById >> Request Id: {}", id);
         return toResponse(issueRequestService.findById(id));
     }
 
     @Tool(description = "Find issue request by id and solved status")
     public IssueRequestToolResponse findIssueRequestByIdAndSolvedStatus(Integer id, boolean isSolved) {
+        log.info("Calling MCP tool: findIssueRequestByIdAndSolvedStatus >> Request Id: {}, Solved: {}", id, isSolved);
         return toResponse(issueRequestService.findById(id, isSolved));
     }
 
@@ -38,6 +42,7 @@ public class IssueRequestTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findAllIssueRequests >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequestService.findAll(page, size, sortBy, sortDirection));
     }
 
@@ -50,6 +55,7 @@ public class IssueRequestTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestsByCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequestService.findAllByCreatedBeforeAndCreatedAfter(
                 McpDateParser.fromIsoInstant(createdBefore),
                 McpDateParser.fromIsoInstant(createdAfter),
@@ -70,6 +76,7 @@ public class IssueRequestTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestsByCreatedDateRangeAndSolvedStatus >> Solved: {}, Page: {}, Size: {}", isSolved, page, size);
         return toPagedResponse(issueRequestService.findAllByCreatedBeforeAndCreatedAfterAndIsSolved(
                 McpDateParser.fromIsoInstant(createdBefore),
                 McpDateParser.fromIsoInstant(createdAfter),
@@ -90,6 +97,7 @@ public class IssueRequestTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestsBySolvedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequestService.findAllBySolvedBeforeAndSolvedAfter(
                 McpDateParser.fromIsoInstant(solvedBefore),
                 McpDateParser.fromIsoInstant(solvedAfter),
@@ -108,6 +116,7 @@ public class IssueRequestTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestsByRequesterId >> Requester Id: {}, Page: {}, Size: {}", requesterId, page, size);
         return toPagedResponse(issueRequestService.findAllByRequesterId(
                 requesterId,
                 page,
@@ -127,6 +136,7 @@ public class IssueRequestTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueRequestsByRequesterIdAndCreatedDateRange >> Requester Id: {}, Page: {}, Size: {}", requesterId, page, size);
         return toPagedResponse(issueRequestService.findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
                 requesterId,
                 McpDateParser.fromIsoInstant(createdBefore),
@@ -138,22 +148,20 @@ public class IssueRequestTools {
         ));
     }
 
-    @Tool(description = "Mark an issue request as solved")
     public IssueRequestToolResponse solveIssueRequest(Integer id) {
         return toResponse(issueRequestService.solveIssue(id));
     }
 
     @Tool(description = "Check whether an issue request exists")
     public Boolean issueRequestExists(Integer id) {
+        log.info("Calling MCP tool: issueRequestExists >> Request Id: {}", id);
         return issueRequestService.isExists(id);
     }
 
-    @Tool(description = "Save or update an issue request")
     public IssueRequestToolResponse saveIssueRequest(IssueRequestToolRequest request) {
         return toResponse(issueRequestService.save(toModel(request)));
     }
 
-    @Tool(description = "Hard delete an issue request by id")
     public IssueRequestToolResponse hardDeleteIssueRequest(Integer id) {
         return toResponse(issueRequestService.hardDelete(id));
     }

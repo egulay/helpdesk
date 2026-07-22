@@ -37,7 +37,7 @@ public class IssueRequestController {
         this.issueRequesterService = issueRequesterService;
     }
 
-    @RequestMapping(value = "/v1/issue_requests/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = {"/api/v1/issue-requests/{id}", "/v1/issue_requests/{id}"}, method = RequestMethod.GET)
     private ResponseEntity<IssueRequest> getIssueRequestByIdV1(
             @PathVariable String id,
             @RequestParam(defaultValue = "") String issueRequestIsSolved) {
@@ -83,7 +83,7 @@ public class IssueRequestController {
         return ResponseEntity.ok(mapPaged(result));
     }
 
-    @RequestMapping(value = "/v1/issue_requests/find_all", method = RequestMethod.GET)
+    @RequestMapping(value = {"/api/v1/issue-requests", "/v1/issue_requests/find_all"}, method = RequestMethod.GET)
     private ResponseEntity<PagedData> getAllIssueRequestsByCreatedBeforeAndCreatedAfter(
             @RequestParam(defaultValue = "") String createdBefore,
             @RequestParam(defaultValue = "") String createdAfter,
@@ -155,7 +155,7 @@ public class IssueRequestController {
         return ResponseEntity.ok(mapPaged(result));
     }
 
-    @RequestMapping(value = "/v1/issue_requests/solve/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = {"/api/v1/issue-requests/{id}/resolution", "/v1/issue_requests/solve/{id}"}, method = RequestMethod.PUT)
     private ResponseEntity<IssueRequest> putSolveIssueRequestV1(@PathVariable String id) {
         log.info("Calling: putSolveIssueRequestV1 >> ".concat(id));
 
@@ -164,7 +164,7 @@ public class IssueRequestController {
         return ResponseEntity.ok(mapIssueRequest(result));
     }
 
-    @RequestMapping(value = "/v1/issue_requests/delete/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = {"/api/v1/issue-requests/{id}", "/v1/issue_requests/delete/{id}"}, method = RequestMethod.DELETE)
     private ResponseEntity<IssueRequest> deleteIssueRequestV1(@PathVariable String id) {
         log.info("Calling: deleteIssueRequestV1 >> ".concat(id));
 
@@ -174,9 +174,9 @@ public class IssueRequestController {
     }
 
 
-    @RequestMapping(value = "/v1/issue_requests/save", method = RequestMethod.POST)
+    @RequestMapping(value = {"/api/v1/issue-requests", "/v1/issue_requests/save"}, method = RequestMethod.POST)
     private ResponseEntity<IssueRequest> saveIssueRequestV1(@RequestBody IssueRequest issueRequest) {
-        log.info("Calling: saveIssueRequestV1 >> ".concat(issueRequest.toString()));
+        log.info("Saving issue request id={} requesterId={}", issueRequest.getId(), issueRequest.getRequesterId());
 
         if (!issueRequesterService.isExistsAndActive(issueRequest.getRequesterId(), true)) {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,

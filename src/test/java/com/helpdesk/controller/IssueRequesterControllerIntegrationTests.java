@@ -1,6 +1,7 @@
 package com.helpdesk.controller;
 
 import com.helpdesk.protoGen.*;
+import com.google.protobuf.util.JsonFormat;
 import com.helpdesk.RestConfiguration;
 import com.helpdesk.TestBase;
 import com.helpdesk.data.model.IssueRequesterModel;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -96,6 +98,86 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
     }
 
     @Test
+    public void get_issue_requester_by_id_as_json_test() throws Exception {
+        insertNewIssueRequester1();
+
+        val response = webClient.get()
+                .uri("/api/v1/issue-requesters/{id}", newIssueRequester1.getId())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toEntity(String.class)
+                .block();
+
+        assertNotNull(response);
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertNotNull(response.getBody());
+
+        val builder = IssueRequester.newBuilder();
+        JsonFormat.parser().merge(response.getBody(), builder);
+        val body = builder.build();
+
+        assertEquals(newIssueRequester1.getId().intValue(), body.getId());
+        assertEquals(newIssueRequester1.getFullName(), body.getFullName());
+        assertEquals(newIssueRequester1.getEmail(), body.getEmail());
+    }
+
+    @Test
+    public void get_issue_requester_by_id_as_binary_protobuf_test() throws Exception {
+        insertNewIssueRequester1();
+
+        val protobufMediaType = MediaType.parseMediaType("application/x-protobuf");
+        val response = webClient.get()
+                .uri("/api/v1/issue-requesters/{id}", newIssueRequester1.getId())
+                .accept(protobufMediaType)
+                .retrieve()
+                .toEntity(byte[].class)
+                .block();
+
+        assertNotNull(response);
+        assertTrue(protobufMediaType.isCompatibleWith(response.getHeaders().getContentType()));
+        assertNotNull(response.getBody());
+
+        val body = IssueRequester.parseFrom(response.getBody());
+        assertEquals(newIssueRequester1.getId().intValue(), body.getId());
+        assertEquals(newIssueRequester1.getFullName(), body.getFullName());
+        assertEquals(newIssueRequester1.getEmail(), body.getEmail());
+    }
+
+    @Test
+    public void create_issue_requester_from_json_and_return_json_test() throws Exception {
+        val email = "json-" + System.nanoTime() + "@email.com";
+        val json = """
+                {
+                  "fullName": "JSON Client",
+                  "email": "%s",
+                  "isActive": {"data": true}
+                }
+                """.formatted(email);
+
+        val response = webClient.post()
+                .uri("/api/v1/issue-requesters")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(json)
+                .retrieve()
+                .toEntity(String.class)
+                .block();
+
+        assertNotNull(response);
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertNotNull(response.getBody());
+
+        val builder = IssueRequester.newBuilder();
+        JsonFormat.parser().merge(response.getBody(), builder);
+        val body = builder.build();
+
+        assertTrue(body.getId() > 0);
+        assertEquals("JSON Client", body.getFullName());
+        assertEquals(email, body.getEmail());
+        assertTrue(body.getIsActive().getData());
+    }
+
+    @Test
     public void get_issue_requester_by_id_with_exception_test() {
         val id = 1;
         val url = RestConfiguration.LOCALHOST
@@ -112,6 +194,30 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
             final String body = ex.getResponseBodyAsString();
             assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
             assertThat(body).contains(String.valueOf(id));
+        }
+    }
+
+    @Test
+    public void get_missing_issue_requester_as_binary_protobuf_error_test() throws Exception {
+        val missingId = Integer.MAX_VALUE;
+        val protobufMediaType = MediaType.parseMediaType("application/x-protobuf");
+
+        try {
+            webClient.get()
+                    .uri("/v1/issue_requesters/{id}", missingId)
+                    .accept(protobufMediaType)
+                    .retrieve()
+                    .toEntity(byte[].class)
+                    .block();
+            fail("Expected a not-found response");
+        } catch (WebClientResponseException ex) {
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertTrue(protobufMediaType.isCompatibleWith(ex.getHeaders().getContentType()));
+
+            val error = ApiError.parseFrom(ex.getResponseBodyAsByteArray());
+            assertEquals(HttpStatus.NOT_FOUND.value(), error.getStatus());
+            assertThat(error.getMessage()).contains(String.valueOf(missingId));
+            assertEquals("/v1/issue_requesters/" + missingId, error.getPath());
         }
     }
 

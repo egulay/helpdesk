@@ -11,12 +11,14 @@ import com.helpdesk.mcp.dto.IssueResponseToolResponse;
 import com.helpdesk.mcp.dto.PagedToolResponse;
 import com.helpdesk.mcp.util.McpDateParser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IssueResponseTools {
 
     private final IssueResponseService issueResponseService;
@@ -25,6 +27,7 @@ public class IssueResponseTools {
 
     @Tool(description = "Find issue response by id")
     public IssueResponseToolResponse findIssueResponseById(Integer id) {
+        log.info("Calling MCP tool: findIssueResponseById >> Response Id: {}", id);
         return toResponse(issueResponseService.findById(id));
     }
 
@@ -35,6 +38,7 @@ public class IssueResponseTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findAllIssueResponses >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueResponseService.findAll(page, size, sortBy, sortDirection));
     }
 
@@ -47,6 +51,7 @@ public class IssueResponseTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueResponsesByCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueResponseService.findAllByCreatedBeforeAndCreatedAfter(
                 McpDateParser.fromIsoInstant(createdBefore),
                 McpDateParser.fromIsoInstant(createdAfter),
@@ -65,6 +70,7 @@ public class IssueResponseTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueResponsesByRequestId >> Request Id: {}, Page: {}, Size: {}", requestId, page, size);
         return toPagedResponse(issueResponseService.findAllByRequestId(
                 requestId,
                 page,
@@ -84,6 +90,7 @@ public class IssueResponseTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueResponsesByRequestIdAndCreatedDateRange >> Request Id: {}, Page: {}, Size: {}", requestId, page, size);
         return toPagedResponse(issueResponseService.findAllByRequestIdAndCreatedBeforeAndCreatedAfter(
                 requestId,
                 McpDateParser.fromIsoInstant(createdBefore),
@@ -103,6 +110,7 @@ public class IssueResponseTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueResponsesByRequesterId >> Requester Id: {}, Page: {}, Size: {}", requesterId, page, size);
         return toPagedResponse(issueResponseService.findAllByRequesterId(
                 requesterId,
                 page,
@@ -122,6 +130,7 @@ public class IssueResponseTools {
             String sortBy,
             SortDirection sortDirection
     ) {
+        log.info("Calling MCP tool: findIssueResponsesByRequesterIdAndCreatedDateRange >> Requester Id: {}, Page: {}, Size: {}", requesterId, page, size);
         return toPagedResponse(issueResponseService.findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
                 requesterId,
                 McpDateParser.fromIsoInstant(createdBefore),
@@ -133,12 +142,10 @@ public class IssueResponseTools {
         ));
     }
 
-    @Tool(description = "Save or update an issue response")
     public IssueResponseToolResponse saveIssueResponse(IssueResponseToolRequest request) {
         return toResponse(issueResponseService.save(toModel(request)));
     }
 
-    @Tool(description = "Hard delete an issue response by id")
     public IssueResponseToolResponse hardDeleteIssueResponse(Integer id) {
         return toResponse(issueResponseService.hardDelete(id));
     }

@@ -3,7 +3,7 @@ package com.helpdesk.mcp.config;
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,11 +13,7 @@ public class OpenAiConfiguration {
     private static final String LM_STUDIO_PLACEHOLDER_KEY = "lm-studio-local";
 
     @Bean("openAiClient")
-    @ConditionalOnProperty(
-            prefix = "helpdesk.ai",
-            name = "provider",
-            havingValue = "openai"
-    )
+    @ConditionalOnExpression("${helpdesk.ai.enabled:true} and '${helpdesk.ai.provider:lm-studio}' == 'openai'")
     public OpenAIClient openAiClient(
             @Value("${helpdesk.ai.openai.api-key:}") String apiKey,
             @Value("${helpdesk.ai.openai.base-url:https://api.openai.com/v1}") String baseUrl
@@ -36,12 +32,7 @@ public class OpenAiConfiguration {
     }
 
     @Bean("lmStudioClient")
-    @ConditionalOnProperty(
-            prefix = "helpdesk.ai",
-            name = "provider",
-            havingValue = "lm-studio",
-            matchIfMissing = true
-    )
+    @ConditionalOnExpression("${helpdesk.ai.enabled:true} and '${helpdesk.ai.provider:lm-studio}' == 'lm-studio'")
     public OpenAIClient lmStudioClient(
             @Value("${helpdesk.ai.lm-studio.base-url:http://localhost:1234/v1}") String baseUrl
     ) {

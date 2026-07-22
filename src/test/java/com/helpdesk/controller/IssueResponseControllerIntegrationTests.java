@@ -1,5 +1,6 @@
 package com.helpdesk.controller;
 
+import com.google.protobuf.util.JsonFormat;
 import com.helpdesk.RestConfiguration;
 import com.helpdesk.TestBase;
 import com.helpdesk.protoGen.*;
@@ -12,6 +13,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -126,6 +128,117 @@ public class IssueResponseControllerIntegrationTests extends TestBase {
                 String.valueOf(response.getBody().getRequesterId()));
         assertEquals(String.valueOf(newIssueResponse1.getRequest().getId()),
                 String.valueOf(response.getBody().getRequestId()));
+    }
+
+    @Test
+    public void get_issue_response_by_id_as_json_test() throws Exception {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+
+        val response = webClient.get()
+                .uri("/api/v1/issue-responses/{id}", newIssueResponse1.getId())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toEntity(String.class)
+                .block();
+
+        assertNotNull(response);
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertNotNull(response.getBody());
+
+        val builder = IssueResponse.newBuilder();
+        JsonFormat.parser().merge(response.getBody(), builder);
+        val body = builder.build();
+
+        assertEquals(newIssueResponse1.getId().intValue(), body.getId());
+        assertEquals(newIssueRequester.getId().intValue(), body.getRequesterId());
+        assertEquals(newIssueRequest.getId().intValue(), body.getRequestId());
+        assertEquals(newIssueResponse1.getBody(), body.getBody());
+    }
+
+    @Test
+    public void get_issue_response_by_id_as_binary_protobuf_test() throws Exception {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+
+        val protobufMediaType = MediaType.parseMediaType("application/x-protobuf");
+        val response = webClient.get()
+                .uri("/api/v1/issue-responses/{id}", newIssueResponse1.getId())
+                .accept(protobufMediaType)
+                .retrieve()
+                .toEntity(byte[].class)
+                .block();
+
+        assertNotNull(response);
+        assertTrue(protobufMediaType.isCompatibleWith(response.getHeaders().getContentType()));
+        assertNotNull(response.getBody());
+
+        val body = IssueResponse.parseFrom(response.getBody());
+        assertEquals(newIssueResponse1.getId().intValue(), body.getId());
+        assertEquals(newIssueRequester.getId().intValue(), body.getRequesterId());
+        assertEquals(newIssueRequest.getId().intValue(), body.getRequestId());
+        assertEquals(newIssueResponse1.getBody(), body.getBody());
+    }
+
+    @Test
+    public void create_issue_response_from_json_and_return_json_test() throws Exception {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        val json = """
+                {
+                  "requestId": %d,
+                  "requesterId": %d,
+                  "body": "JSON issue response"
+                }
+                """.formatted(newIssueRequest.getId(), newIssueRequester.getId());
+
+        val response = webClient.post()
+                .uri("/api/v1/issue-responses")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(json)
+                .retrieve()
+                .toEntity(String.class)
+                .block();
+
+        assertNotNull(response);
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertNotNull(response.getBody());
+
+        val builder = IssueResponse.newBuilder();
+        JsonFormat.parser().merge(response.getBody(), builder);
+        val body = builder.build();
+
+        assertTrue(body.getId() > 0);
+        assertEquals(newIssueRequester.getId().intValue(), body.getRequesterId());
+        assertEquals(newIssueRequest.getId().intValue(), body.getRequestId());
+        assertEquals("JSON issue response", body.getBody());
+    }
+
+    @Test
+    public void get_missing_issue_response_as_binary_protobuf_error_test() throws Exception {
+        val missingId = Integer.MAX_VALUE;
+        val protobufMediaType = MediaType.parseMediaType("application/x-protobuf");
+
+        try {
+            webClient.get()
+                    .uri("/api/v1/issue-responses/{id}", missingId)
+                    .accept(protobufMediaType)
+                    .retrieve()
+                    .toEntity(byte[].class)
+                    .block();
+            fail("Expected a not-found response");
+        } catch (WebClientResponseException ex) {
+            assertEquals(HttpStatus.NOT_FOUND.value(), ex.getRawStatusCode());
+            assertTrue(protobufMediaType.isCompatibleWith(ex.getHeaders().getContentType()));
+
+            val error = ApiError.parseFrom(ex.getResponseBodyAsByteArray());
+            assertEquals(HttpStatus.NOT_FOUND.value(), error.getStatus());
+            assertThat(error.getMessage()).contains(String.valueOf(missingId));
+            assertEquals("/api/v1/issue-responses/" + missingId, error.getPath());
+        }
     }
 
     @Test

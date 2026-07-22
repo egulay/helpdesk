@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Calendar;
@@ -25,6 +26,7 @@ import java.util.Date;
 
 
 @Service
+@Transactional(readOnly = true)
 public class IssueRequestService {
     final IssueRequestRepository issueRequestRepository;
 
@@ -201,6 +203,7 @@ public class IssueRequestService {
         }
     }
 
+    @Transactional
     public IssueRequestModel solveIssue(Integer id) {
         try {
             val issueRequest = getRequest(id);
@@ -208,7 +211,7 @@ public class IssueRequestService {
             issueRequest.setIsSolved(true);
             issueRequest.setSolved(Calendar.getInstance().getTime());
 
-            return issueRequestRepository.save(issueRequest);
+            return issueRequestRepository.saveAndFlush(issueRequest);
 
         } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw ExceptionMapperUtil.mapPersistenceException(ex);
@@ -224,26 +227,28 @@ public class IssueRequestService {
         }
     }
 
+    @Transactional
     public IssueRequestModel save(IssueRequestModel model) {
         try {
             val id = model.getId();
             if (id == null || id <= 0) {
                 model.setId(null);
                 model.setSolved(null);
-                return issueRequestRepository.save(model);
+                return issueRequestRepository.saveAndFlush(model);
             }
 
             if (!issueRequestRepository.existsById(id)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "requestId:".concat(id.toString()));
             }
 
-            return issueRequestRepository.save(model);
+            return issueRequestRepository.saveAndFlush(model);
 
         } catch (final ConstraintViolationException | DataIntegrityViolationException | TransactionSystemException ex) {
             throw ExceptionMapperUtil.mapPersistenceException(ex);
         }
     }
 
+    @Transactional
     public IssueRequestModel hardDelete(Integer id) {
         try {
             val requestToHardDelete = getRequest(id);
@@ -258,6 +263,7 @@ public class IssueRequestService {
     }
 
     // WARNING: TEST PURPOSES ONLY! DO NOT IMPLEMENT AN ENDPOINT (at least for now) >>
+    @Transactional
     public void hardDeleteAll() {
         try {
             issueRequestRepository.deleteAll();
