@@ -51,7 +51,7 @@ src/main/resources/db         Flyway migrations
 ## Technology
 
 - Java 17
-- Spring Boot 3.5
+- Spring Boot 4.1
 - Spring MVC, Spring Data JPA, Validation, Actuator, and Cache
 - Spring AI MCP Server over WebMVC Streamable HTTP
 - MySQL 8, Hibernate, and Flyway
