@@ -1,18 +1,23 @@
 package io.gulay.helpdesk.controller.util;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
-import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.JacksonComponent;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.exc.StreamWriteException;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
-
-@JsonComponent
-public class ProtobufJsonSerializer extends JsonSerializer<Message> {
+@JacksonComponent
+public class ProtobufJsonSerializer extends ValueSerializer<Message> {
     @Override
-    public void serialize(Message message, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeRawValue(JsonFormat.printer().print(message));
+    public void serialize(Message message, JsonGenerator gen, SerializationContext context) throws JacksonException {
+        try {
+            gen.writeRawValue(JsonFormat.printer().print(message));
+        } catch (InvalidProtocolBufferException ex) {
+            throw new StreamWriteException(gen, "Could not serialize Protobuf message", ex);
+        }
     }
 }
