@@ -43,6 +43,10 @@ spring:
         streamable-http:
           mcp-endpoint: /mcp
         request-timeout: 5m
+  web:
+    error:
+      include-message: never
+      include-binding-errors: never
 
 springdoc:
   api-docs:
@@ -62,9 +66,6 @@ server:
   port: 8888
   http2:
     enabled: true
-  error:
-    include-message: never
-    include-binding-errors: never
 
 ---
 spring:
