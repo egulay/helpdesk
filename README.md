@@ -37,13 +37,13 @@ AI assistant MCP tools ───────> configured AI client ──┘
 The main packages are:
 
 ```text
-com.helpdesk.controller       HTTP resources and content-negotiated errors
-com.helpdesk.data.model       JPA entities
-com.helpdesk.data.repository  Spring Data repositories
-com.helpdesk.data.service     transactional application services
-com.helpdesk.mcp.client       OpenAI, LM Studio, and disabled AI clients
-com.helpdesk.mcp.dto          JSON-friendly MCP request/response DTOs
-com.helpdesk.mcp.tools        read, mutation, and assistant MCP tools
+io.gulay.helpdesk.controller       HTTP resources and content-negotiated errors
+io.gulay.helpdesk.data.model       JPA entities
+io.gulay.helpdesk.data.repository  Spring Data repositories
+io.gulay.helpdesk.data.service     transactional application services
+io.gulay.helpdesk.mcp.client       OpenAI, LM Studio, and disabled AI clients
+io.gulay.helpdesk.mcp.dto          JSON-friendly MCP request/response DTOs
+io.gulay.helpdesk.mcp.tools        read, mutation, and assistant MCP tools
 src/main/proto                HTTP payload and API error schemas
 src/main/resources/db         Flyway migrations
 ```
@@ -163,7 +163,15 @@ Flyway is enabled and validates/applies migrations during application startup. T
 src/main/resources/db/migration/V1__create_helpdesk_schema.sql
 ```
 
-It defines foreign keys, a unique requester email constraint, and query-oriented indexes. Add new versioned migrations instead of modifying a migration already used by an environment.
+This migration is the single schema source of truth for local development,
+tests, and deployed environments. The project does not execute a separate
+`ddl.sql`: integration tests start an empty MySQL Testcontainer and let Flyway
+apply the same migrations used by the application. Tests create their fixtures
+through the application services.
+
+The initial migration defines foreign keys, a unique requester email constraint,
+and query-oriented indexes. Add new versioned migrations instead of modifying a
+migration already used by an environment.
 
 Service reads run in read-only transactions. Mutations run in regular transactions and flush before returning so validation and database constraint failures are mapped within the service boundary.
 
@@ -257,7 +265,12 @@ The easiest local setup is:
 4. creates datasource secrets and optionally stores `OPENAI_API_KEY`;
 5. runs `./mvnw clean verify`.
 
-`run.sh` verifies the Vault container and secret, optionally patches the OpenAI key, and starts Spring Boot with the embedded MCP server enabled. Flyway creates or migrates the local application schema during startup. Neither script prints secret values.
+`build.sh` does not create application tables directly. Its Maven verification
+uses Flyway inside Testcontainers. `run.sh` verifies the Vault container and
+secret, optionally patches the OpenAI key, and starts Spring Boot with the
+embedded MCP server enabled; application startup then lets Flyway create or
+migrate the local schema. Neither script executes `ddl.sql` or prints secret
+values.
 
 To recreate the local MySQL container during setup:
 

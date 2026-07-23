@@ -73,7 +73,7 @@ fi
 
 printf '🚀 Starting Spring Boot; Flyway will validate and migrate the database...\n'
 ./mvnw spring-boot:run \
-  -Dspring-boot.run.main-class=com.helpdesk.HelpdeskApplication \
+  -Dspring-boot.run.main-class=io.gulay.helpdesk.HelpdeskApplication \
   -Dspring-boot.run.arguments=--spring.ai.mcp.server.enabled=true
 
 printf '%s\n' \

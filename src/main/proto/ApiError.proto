@@ -1,6 +1,6 @@
 syntax = "proto3";
 option java_multiple_files = true;
-package com.helpdesk.protoGen;
+package io.gulay.helpdesk.protoGen;
 
 message ApiError {
   int32 status = 1;
