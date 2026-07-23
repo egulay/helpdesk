@@ -1,0 +1,226 @@
+package io.gulay.helpdesk.controller;
+
+import com.google.protobuf.NullValue;
+import io.gulay.helpdesk.data.model.IssueResponseModel;
+import io.gulay.helpdesk.data.service.IssueRequestService;
+import io.gulay.helpdesk.data.service.IssueRequesterService;
+import io.gulay.helpdesk.data.service.IssueResponseService;
+import io.gulay.helpdesk.data.util.GenericPagedModel;
+import io.gulay.helpdesk.protoGen.IssueResponse;
+import io.gulay.helpdesk.protoGen.IssueResponses;
+import io.gulay.helpdesk.protoGen.NullableInt64;
+import io.gulay.helpdesk.protoGen.PagedData;
+import io.gulay.helpdesk.data.util.SortDirection;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.Objects;
+
+import static io.gulay.helpdesk.controller.util.Parsers.tryParseInteger;
+import static io.gulay.helpdesk.controller.util.Parsers.tryParseLong;
+import static java.util.stream.Collectors.toList;
+
+@RestController
+@Slf4j
+public class IssueResponseController {
+    final IssueResponseService issueResponseService;
+
+    final IssueRequesterService issueRequesterService;
+
+    final IssueRequestService issueRequestService;
+
+    @Autowired
+    public IssueResponseController(IssueResponseService issueResponseService,
+                                   IssueRequesterService issueRequesterService,
+                                   IssueRequestService issueRequestService) {
+        this.issueResponseService = issueResponseService;
+        this.issueRequesterService = issueRequesterService;
+        this.issueRequestService = issueRequestService;
+    }
+
+    @RequestMapping(value = {"/api/v1/issue-responses/{id}", "/v1/issue_responses/{id}"}, method = RequestMethod.GET)
+    private ResponseEntity<IssueResponse> getIssueResponsesByIdV1(@PathVariable String id) {
+        log.info("Calling: getIssueResponsesByIdV1 >> ".concat(id));
+
+        val issueResponse = issueResponseService.findById(tryParseInteger(id, "id"));
+
+        return ResponseEntity.ok(mapIssueResponse(issueResponse));
+    }
+
+    @RequestMapping(value = {"/api/v1/issue-responses", "/v1/issue_responses/find_all"}, method = RequestMethod.GET)
+    private ResponseEntity<PagedData> getAllIssueResponsesByCreatedBeforeAndCreatedAfter(
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
+            log.info("Calling: getAllIssueResponsesByCreatedBeforeAndCreatedAfter >> Created Before: "
+                    .concat(createdBefore)
+                    .concat(" | Created After: ").concat(createdAfter));
+
+            val result = issueResponseService
+                    .findAllByCreatedBeforeAndCreatedAfter(new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+
+            return ResponseEntity.ok(mapPaged(result));
+        }
+
+        log.info("Calling: getAllIssueRequestersByCreatedBeforeAndCreatedAfter");
+
+        val result = issueResponseService
+                .findAll(pageNo, pageSize, sortBy
+                        , SortDirection.of(sortDir));
+
+        return ResponseEntity.ok(mapPaged(result));
+    }
+
+    @RequestMapping(value = "/v1/issue_responses/find_all_by_requester/{requesterId}", method = RequestMethod.GET)
+    private ResponseEntity<PagedData> getAllIssueResponsesByRequesterIdAndCreatedBeforeAndCreatedAfter(
+            @PathVariable String requesterId,
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
+            log.info("Calling: getAllIssueResponsesByRequesterIdAndCreatedBeforeAndCreatedAfter >> Requester Id: "
+                    .concat(requesterId)
+                    .concat(" | Created Before: ").concat(createdBefore)
+                    .concat(" | Created After: ").concat(createdAfter));
+
+            val result = issueResponseService
+                    .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(tryParseInteger(requesterId, "requesterId"),
+                            new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+
+            return ResponseEntity.ok(mapPaged(result));
+        }
+
+        log.info("Calling: getAllIssueResponsesByRequesterIdAndCreatedBeforeAndCreatedAfter >> Requester Id: "
+                .concat(requesterId));
+
+        val result = issueResponseService
+                .findAllByRequesterId(tryParseInteger(requesterId, "requesterId"), pageNo, pageSize, sortBy
+                        , SortDirection.of(sortDir));
+
+        return ResponseEntity.ok(mapPaged(result));
+    }
+
+    @RequestMapping(value = "/v1/issue_responses/find_all_by_request/{requestId}", method = RequestMethod.GET)
+    private ResponseEntity<PagedData> getAllIssueResponsesByRequestIdAndCreatedBeforeAndCreatedAfter(
+            @PathVariable String requestId,
+            @RequestParam(defaultValue = "") String createdBefore,
+            @RequestParam(defaultValue = "") String createdAfter,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "created") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        if (StringUtils.isNotBlank(createdBefore) && StringUtils.isNotBlank(createdAfter)) {
+            log.info("Calling: getAllIssueResponsesByRequestIdAndCreatedBeforeAndCreatedAfter >> Request Id: "
+                    .concat(requestId)
+                    .concat(" | Created Before: ").concat(createdBefore)
+                    .concat(" | Created After: ").concat(createdAfter));
+
+            val result = issueResponseService
+                    .findAllByRequestIdAndCreatedBeforeAndCreatedAfter(tryParseInteger(requestId, "requestId"),
+                            new Date(tryParseLong(createdBefore, "createdBefore")),
+                            new Date(tryParseLong(createdAfter, "createdAfter")),
+                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+
+            return ResponseEntity.ok(mapPaged(result));
+        }
+
+        log.info("Calling: getAllIssueResponsesByRequestIdAndCreatedBeforeAndCreatedAfter >> Requester Id: "
+                .concat(requestId));
+
+        val result = issueResponseService
+                .findAllByRequestId(tryParseInteger(requestId, "requestId"), pageNo, pageSize, sortBy
+                        , SortDirection.of(sortDir));
+
+        return ResponseEntity.ok(mapPaged(result));
+    }
+
+    @RequestMapping(value = {"/api/v1/issue-responses/{id}", "/v1/issue_responses/delete/{id}"}, method = RequestMethod.DELETE)
+    private ResponseEntity<IssueResponse> deleteIssueResponseV1(@PathVariable String id) {
+        log.info("Calling: deleteIssueResponseV1 >> ".concat(id));
+
+        val result = issueResponseService.hardDelete(tryParseInteger(id, "id"));
+
+        return ResponseEntity.ok(mapIssueResponse(result));
+    }
+
+
+    @RequestMapping(value = {"/api/v1/issue-responses", "/v1/issue_responses/save"}, method = RequestMethod.POST)
+    private ResponseEntity<IssueResponse> saveIssueResponseV1(@RequestBody IssueResponse issueResponse) {
+        log.info("Saving issue response id={} requestId={} requesterId={}",
+                issueResponse.getId(), issueResponse.getRequestId(), issueResponse.getRequesterId());
+
+        if (!issueRequesterService.isExistsAndActive(issueResponse.getRequesterId(), true)) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
+                    "requesterId:".concat(String.valueOf(issueResponse.getRequesterId()))
+                            .concat(",isActive:true"));
+        }
+
+        if (!issueRequestService.isExists(issueResponse.getRequestId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
+                    "requestId:".concat(String.valueOf(issueResponse.getRequestId())));
+        }
+
+        val requester = issueRequesterService.findById(issueResponse.getRequesterId(), true);
+        val request = issueRequestService.findById(issueResponse.getRequestId());
+
+        val saved = issueResponseService.save(IssueResponseModel
+                .builder()
+                .id(issueResponse.getId())
+                .requester(requester)
+                .request(request)
+                .body(issueResponse.getBody())
+                .build());
+
+        return ResponseEntity.ok(mapIssueResponse(saved));
+    }
+
+    private PagedData mapPaged(GenericPagedModel<IssueResponseModel> model) {
+        return PagedData.newBuilder()
+                .setTotalElements(model.getTotalElements())
+                .setNumberOfElements(model.getNumberOfElements())
+                .setTotalPages(model.getTotalPages())
+                .setIssueResponses(mapIssueResponses(model.getContent()))
+                .build();
+    }
+
+    private IssueResponses mapIssueResponses(Collection<IssueResponseModel> models) {
+        return IssueResponses.newBuilder()
+                .addAllIssueResponses(models
+                        .stream()
+                        .map(this::mapIssueResponse)
+                        .collect(toList()))
+                .build();
+    }
+
+    private IssueResponse mapIssueResponse(IssueResponseModel model) {
+        return IssueResponse.newBuilder()
+                .setId(model.getId())
+                .setRequesterId(model.getRequester().getId())
+                .setRequestId(model.getRequest().getId())
+                .setBody(model.getBody())
+                .setCreated(Objects.nonNull(model.getCreated())
+                        ? NullableInt64.newBuilder().setData(model.getCreated()
+                        .toInstant().toEpochMilli()).build()
+                        : NullableInt64.newBuilder().setNull(NullValue.NULL_VALUE).build())
+                .build();
+    }
+}

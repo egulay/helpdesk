@@ -12,7 +12,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.helpdesk</groupId>
+    <groupId>io.gulay</groupId>
     <artifactId>helpdesk</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>helpdesk</name>
