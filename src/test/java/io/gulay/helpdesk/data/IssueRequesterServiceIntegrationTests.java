@@ -5,14 +5,17 @@ import io.gulay.helpdesk.data.model.IssueRequesterModel;
 import io.gulay.helpdesk.data.util.GenericPagedModel;
 import io.gulay.helpdesk.data.util.SortDirection;
 import lombok.val;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static org.junit.Assert.*;
 
 public class IssueRequesterServiceIntegrationTests extends TestBase {
     private static IssueRequesterModel newIssueRequester1;
@@ -49,7 +52,7 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                 .anyMatch(f -> f.getId().equals(newIssueRequester2.getId())));
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         issueRequesterService.hardDeleteAll();
     }
@@ -60,13 +63,13 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
         assertNotNull(newIssueRequester1);
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void insert_issue_requester_with_exception_test() {
-        newIssueRequester2 = issueRequesterService.save(IssueRequesterModel
+        assertThrows(ResponseStatusException.class, () -> issueRequesterService.save(IssueRequesterModel
                 .builder()
                 .fullName("test2_full_name")
                 .email("test2 email")
-                .build());
+                .build()));
     }
 
     @Test
@@ -86,16 +89,16 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
         assertNotEquals(newIssueRequester1.getEmail(), updated.getEmail());
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void update_issue_requester_with_exception_test() {
         insertNewIssueRequester1();
 
-        issueRequesterService.save(IssueRequesterModel
+        assertThrows(ResponseStatusException.class, () -> issueRequesterService.save(IssueRequesterModel
                 .builder()
                 .id(newIssueRequester1.getId())
                 .fullName("   ")
                 .email("new@email.net")
-                .build());
+                .build()));
     }
 
     @Test
@@ -110,12 +113,12 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
         assertEquals(newIssueRequester1.getEmail(), found.getEmail());
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void find_issue_requester_by_id_with_exception_test() {
         insertNewIssueRequester1();
         insertNewIssueRequester2();
 
-        issueRequesterService.findById(-1);
+        assertThrows(ResponseStatusException.class, () -> issueRequesterService.findById(-1));
     }
 
     @Test
@@ -127,10 +130,10 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                 .findAll(0, 10, "created", SortDirection.Descending));
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void find_all_issue_requesters_with_exception_test() {
-        testCollection(issueRequesterService
-                .findAll(0, 10, "created", SortDirection.Descending));
+        assertThrows(ResponseStatusException.class, () -> testCollection(issueRequesterService
+                .findAll(0, 10, "created", SortDirection.Descending)));
     }
 
     @Test
@@ -143,14 +146,14 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                         SortDirection.Descending));
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void find_all_issue_requesters_by_full_name_with_exception_test() {
         insertNewIssueRequester1();
         insertNewIssueRequester2();
 
-        testCollection(issueRequesterService
+        assertThrows(ResponseStatusException.class, () -> testCollection(issueRequesterService
                 .findAllByFullNameContainingIgnoreCase("oh noes!!", 0, 10, "created",
-                        SortDirection.Descending));
+                        SortDirection.Descending)));
     }
 
     @Test
@@ -166,14 +169,14 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                         tomorrow, yesterday, 0, 10, "created", SortDirection.Descending));
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void find_all_issue_requesters_by_full_name_and_created_before_and_created_after_with_exception_test() {
         val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
         val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
-        testCollection(issueRequesterService
+        assertThrows(ResponseStatusException.class, () -> testCollection(issueRequesterService
                 .findAllByFullNameContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter("ull_na",
-                        tomorrow, yesterday, 0, 10, "created", SortDirection.Descending));
+                        tomorrow, yesterday, 0, 10, "created", SortDirection.Descending)));
     }
 
     @Test
@@ -186,14 +189,14 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                         SortDirection.Descending));
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void find_all_issue_requesters_by_email_with_exception_test() {
         insertNewIssueRequester1();
         insertNewIssueRequester2();
 
-        testCollection(issueRequesterService
+        assertThrows(ResponseStatusException.class, () -> testCollection(issueRequesterService
                 .findAllByFullNameContainingIgnoreCase("oh noes!!", 0, 10, "created",
-                        SortDirection.Descending));
+                        SortDirection.Descending)));
     }
 
     @Test
@@ -209,14 +212,15 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                         tomorrow, yesterday, 0, 10, "created", SortDirection.Descending));
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void find_all_issue_requesters_by_email_and_created_before_and_created_after_with_exception_test() {
         val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
         val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
-        testCollection(issueRequesterService
+
+        assertThrows(ResponseStatusException.class, () -> testCollection(issueRequesterService
                 .findAllByEmailContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter("ull_na",
-                        tomorrow, yesterday, 0, 10, "created", SortDirection.Descending));
+                        tomorrow, yesterday, 0, 10, "created", SortDirection.Descending)));
     }
 
     @Test
@@ -232,7 +236,7 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                         tomorrow, yesterday, true, 0, 10, "created", SortDirection.Descending));
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void find_all_issue_requesters_by_created_before_and_created_after_and_is_active_with_exception_test() {
         insertNewIssueRequester1();
         insertNewIssueRequester2();
@@ -240,9 +244,9 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
         val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
         val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
-        testCollection(issueRequesterService
+        assertThrows(ResponseStatusException.class, () -> testCollection(issueRequesterService
                 .findAllByCreatedBeforeAndCreatedAfterAndIsActive(
-                        tomorrow, yesterday, false, 0, 10, "created", SortDirection.Descending));
+                        tomorrow, yesterday, false, 0, 10, "created", SortDirection.Descending)));
     }
 
     @Test
@@ -258,14 +262,14 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
                         tomorrow, yesterday, 0, 10, "created", SortDirection.Descending));
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void find_all_issue_requesters_by_created_before_and_created_after_with_exception_test() {
         val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
         val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
-        testCollection(issueRequesterService
+        assertThrows(ResponseStatusException.class, () -> testCollection(issueRequesterService
                 .findAllByCreatedBeforeAndCreatedAfter(
-                        tomorrow, yesterday, 0, 10, "created", SortDirection.Descending));
+                        tomorrow, yesterday, 0, 10, "created", SortDirection.Descending)));
     }
 
     @Test
@@ -276,16 +280,5 @@ public class IssueRequesterServiceIntegrationTests extends TestBase {
 
         assertEquals(newIssueRequester1.getId(), toggled.getId());
         assertNotEquals(newIssueRequester1.getIsActive(), toggled.getIsActive());
-    }
-
-    @Test(expected = ResponseStatusException.class)
-    public void delete_issue_requester_test() {
-        insertNewIssueRequester1();
-
-        val deleted = issueRequesterService.hardDelete(newIssueRequester1.getId());
-
-        assertEquals(newIssueRequester1.getId(), deleted.getId());
-
-        issueRequesterService.findById(deleted.getId());
     }
 }

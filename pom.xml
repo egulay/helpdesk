@@ -40,7 +40,6 @@
         <openai-java.version>4.43.0</openai-java.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <assertj.version>3.27.7</assertj.version>
     </properties>
 
     <dependencyManagement>
@@ -219,12 +218,6 @@
 
         <!-- Tests -->
         <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-testing</artifactId>
             <scope>test</scope>
@@ -242,11 +235,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-mysql</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

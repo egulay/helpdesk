@@ -7,8 +7,11 @@ import io.gulay.helpdesk.TestBase;
 import io.gulay.helpdesk.data.model.IssueRequesterModel;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -18,14 +21,13 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 public class IssueRequesterControllerIntegrationTests extends TestBase {
     private static IssueRequesterModel newIssueRequester1;
 
     private static IssueRequesterModel newIssueRequester2;
 
-    @Before
+    @BeforeEach
     public void initWebClientBaseUrl() {
         this.webClient = this.webClientBuilder
                 .baseUrl(RestConfiguration.LOCALHOST + port)
@@ -69,7 +71,7 @@ public class IssueRequesterControllerIntegrationTests extends TestBase {
                 .anyMatch(f -> String.valueOf(f.getId()).equals(newIssueRequester2.getId().toString())));
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         issueRequesterService.hardDeleteAll();
     }

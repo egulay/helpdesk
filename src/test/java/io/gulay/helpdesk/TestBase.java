@@ -3,7 +3,6 @@ package io.gulay.helpdesk;
 import io.gulay.helpdesk.data.service.IssueRequestService;
 import io.gulay.helpdesk.data.service.IssueRequesterService;
 import io.gulay.helpdesk.data.service.IssueResponseService;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -11,13 +10,13 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@DirtiesContext
-@RunWith(SpringJUnit4ClassRunner.class)
+
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @SpringBootTest(
         classes = HelpdeskApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -25,8 +24,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ActiveProfiles("test")
 @Testcontainers
 public abstract class TestBase {
-    private static final MySQLContainer container;
     private static final String IMAGE_VERSION = "mysql:8.0";
+
+    @Container
+    private static final MySQLContainer container =
+            new MySQLContainer(IMAGE_VERSION)
+                    .withUsername("test_user")
+                    .withPassword("test_password")
+                    .withDatabaseName("help_desk");
 
     @LocalServerPort
     public int port;
@@ -46,13 +51,6 @@ public abstract class TestBase {
     @Autowired
     public IssueResponseService issueResponseService;
 
-    static {
-        container = new MySQLContainer(IMAGE_VERSION)
-                .withUsername("test_user")
-                .withPassword("test_password")
-                .withDatabaseName("help_desk");
-        container.start();
-    }
 
     @DynamicPropertySource
     public static void overrideContainerProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {

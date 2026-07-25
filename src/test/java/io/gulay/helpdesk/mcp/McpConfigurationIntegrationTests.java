@@ -4,21 +4,18 @@ import io.gulay.helpdesk.TestBase;
 import io.gulay.helpdesk.mcp.client.AiService;
 import io.gulay.helpdesk.mcp.client.DisabledAiService;
 import lombok.val;
-import org.junit.Test;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
+
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class McpConfigurationIntegrationTests extends TestBase {
 
@@ -30,7 +27,7 @@ public class McpConfigurationIntegrationTests extends TestBase {
 
     @Test
     public void disabled_ai_provider_does_not_create_external_client() {
-        assertTrue(aiService instanceof DisabledAiService);
+        assertInstanceOf(DisabledAiService.class, aiService);
     }
 
     @Test
@@ -48,7 +45,7 @@ public class McpConfigurationIntegrationTests extends TestBase {
 
     @Test
     public void mcp_tools_are_read_only_by_default() {
-        Set<String> toolNames = Arrays.stream(toolCallbackProvider.getToolCallbacks())
+        val toolNames = Arrays.stream(toolCallbackProvider.getToolCallbacks())
                 .map(callback -> callback.getToolDefinition().name())
                 .collect(Collectors.toSet());
 
@@ -67,7 +64,7 @@ public class McpConfigurationIntegrationTests extends TestBase {
 
     @Test
     public void mcp_uses_streamable_http_endpoint() {
-        McpResponse initialize = postMcp(null, """
+        val initialize = postMcp(null, """
                 {
                   "jsonrpc": "2.0",
                   "id": 1,
@@ -88,7 +85,7 @@ public class McpConfigurationIntegrationTests extends TestBase {
         assertFalse(initialize.sessionId().isBlank());
         assertTrue(initialize.body().contains("protocolVersion"));
 
-        McpResponse initialized = postMcp(initialize.sessionId(), """
+        val initialized = postMcp(initialize.sessionId(), """
                 {
                   "jsonrpc": "2.0",
                   "method": "notifications/initialized",
@@ -97,7 +94,7 @@ public class McpConfigurationIntegrationTests extends TestBase {
                 """);
         assertTrue(initialized.status() == 200 || initialized.status() == 202);
 
-        McpResponse tools = postMcp(initialize.sessionId(), """
+        val tools = postMcp(initialize.sessionId(), """
                 {
                   "jsonrpc": "2.0",
                   "id": 2,
@@ -109,7 +106,7 @@ public class McpConfigurationIntegrationTests extends TestBase {
         assertEquals(200, tools.status());
         assertTrue(tools.body().contains("findIssueRequesterById"));
 
-        McpResponse toolCall = postMcp(initialize.sessionId(), """
+        val toolCall = postMcp(initialize.sessionId(), """
                 {
                   "jsonrpc": "2.0",
                   "id": 3,
@@ -153,9 +150,9 @@ public class McpConfigurationIntegrationTests extends TestBase {
                 })
                 .bodyValue(payload)
                 .exchangeToMono(response -> {
-                    int status = response.statusCode().value();
-                    HttpHeaders headers = response.headers().asHttpHeaders();
-                    String responseSessionId = headers.getFirst("Mcp-Session-Id");
+                    val status = response.statusCode().value();
+                    val headers = response.headers().asHttpHeaders();
+                    val responseSessionId = headers.getFirst("Mcp-Session-Id");
                     return response.bodyToMono(String.class)
                             .defaultIfEmpty("")
                             .map(body -> new McpResponse(status, responseSessionId, body));
