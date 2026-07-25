@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
 
@@ -111,8 +112,18 @@ public class HelpdeskContextBuilder {
                 requesterId,
                 request.getBody(),
                 request.getIsSolved(),
-                request.getCreated() == null ? null : request.getCreated().toInstant().toString(),
-                request.getSolved() == null ? null : request.getSolved().toInstant().toString()
+                request.getCreated() == null
+                        ? null
+                        : request.getCreated()
+                        .atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .toString(),
+                request.getSolved() == null
+                        ? null
+                        : request.getSolved()
+                        .atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .toString()
         );
     }
 
@@ -122,7 +133,12 @@ public class HelpdeskContextBuilder {
                 requester.getFullName(),
                 requester.getEmail(),
                 requester.getIsActive(),
-                requester.getCreated() == null ? null : requester.getCreated().toInstant().toString()
+                requester.getCreated() == null
+                        ? null
+                        : requester.getCreated()
+                        .atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .toString()
         );
     }
 
@@ -140,7 +156,12 @@ public class HelpdeskContextBuilder {
                 requestId,
                 requesterId,
                 response.getBody(),
-                response.getCreated() == null ? null : response.getCreated().toInstant().toString()
+                response.getCreated() == null
+                        ? null
+                        : response.getCreated()
+                        .atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .toString()
         );
     }
 }

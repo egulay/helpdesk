@@ -7,12 +7,14 @@ import io.gulay.helpdesk.data.util.SortDirection;
 import io.gulay.helpdesk.mcp.dto.IssueRequesterToolRequest;
 import io.gulay.helpdesk.mcp.dto.IssueRequesterToolResponse;
 import io.gulay.helpdesk.mcp.dto.PagedToolResponse;
-import io.gulay.helpdesk.mcp.util.McpDateParser;
+import io.gulay.helpdesk.mcp.util.McpLocalDateTimeParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
+
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -76,8 +78,8 @@ public class IssueRequesterTools {
         log.info("Calling MCP tool: findIssueRequestersByFullNameAndCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAllByFullNameContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
                 fullName,
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 page,
                 size,
                 sortBy,
@@ -116,8 +118,8 @@ public class IssueRequesterTools {
         log.info("Calling MCP tool: findIssueRequestersByEmailAndCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAllByEmailContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
                 email,
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 page,
                 size,
                 sortBy,
@@ -137,8 +139,8 @@ public class IssueRequesterTools {
     ) {
         log.info("Calling MCP tool: findIssueRequestersByCreatedDateRangeAndActiveStatus >> Active: {}, Page: {}, Size: {}", isActive, page, size);
         return toPagedResponse(issueRequesterService.findAllByCreatedBeforeAndCreatedAfterAndIsActive(
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 isActive,
                 page,
                 size,
@@ -158,8 +160,8 @@ public class IssueRequesterTools {
     ) {
         log.info("Calling MCP tool: findIssueRequestersByCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequesterService.findAllByCreatedBeforeAndCreatedAfter(
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 page,
                 size,
                 sortBy,
@@ -201,7 +203,12 @@ public class IssueRequesterTools {
                 model.getFullName(),
                 model.getEmail(),
                 model.getIsActive(),
-                model.getCreated() == null ? null : model.getCreated().toInstant().toString()
+                model.getCreated() == null
+                        ? null
+                        : model.getCreated()
+                        .atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .toString()
         );
     }
 

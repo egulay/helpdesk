@@ -16,8 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Objects;
 
 import static io.gulay.helpdesk.controller.util.Parsers.*;
@@ -66,10 +69,20 @@ public class IssueRequestController {
                     .concat(" | Created After: ").concat(createdAfter));
 
             val result = issueRequestService
-                    .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(tryParseInteger(requesterId, "requesterId"),
-                            new Date(tryParseLong(createdBefore, "createdBefore")),
-                            new Date(tryParseLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+                    .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
+                            tryParseInteger(requesterId, "requesterId"),
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdBefore, "createdBefore")),
+                                    ZoneOffset.UTC
+                            ),
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdAfter, "createdAfter")),
+                                    ZoneOffset.UTC
+                            ),
+                            pageNo,
+                            pageSize,
+                            sortBy,
+                            SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -96,9 +109,19 @@ public class IssueRequestController {
                     .concat(" | Created After: ").concat(createdAfter));
 
             val result = issueRequestService
-                    .findAllByCreatedBeforeAndCreatedAfter(new Date(tryParseLong(createdBefore, "createdBefore")),
-                            new Date(tryParseLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+                    .findAllByCreatedBeforeAndCreatedAfter(
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdBefore, "createdBefore")),
+                                    ZoneOffset.UTC
+                            ),
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdAfter, "createdAfter")),
+                                    ZoneOffset.UTC
+                            ),
+                            pageNo,
+                            pageSize,
+                            sortBy,
+                            SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -127,10 +150,19 @@ public class IssueRequestController {
 
         val result = issueRequestService
                 .findAllByCreatedBeforeAndCreatedAfterAndIsSolved(
-                        new Date(tryParseLong(createdBefore, "createdBefore")),
-                        new Date(tryParseLong(createdAfter, "createdAfter")),
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(tryParseLong(createdBefore, "createdBefore")),
+                                ZoneOffset.UTC
+                        ),
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(tryParseLong(createdAfter, "createdAfter")),
+                                ZoneOffset.UTC
+                        ),
                         tryParseBoolean(isSolved, "isSolved"),
-                        pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+                        pageNo,
+                        pageSize,
+                        sortBy,
+                        SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -148,9 +180,18 @@ public class IssueRequestController {
 
         val result = issueRequestService
                 .findAllBySolvedBeforeAndSolvedAfter(
-                        new Date(tryParseLong(solvedBefore, "solvedBefore")),
-                        new Date(tryParseLong(solvedAfter, "solvedAfter")),
-                        pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(tryParseLong(solvedBefore, "solvedBefore")),
+                                ZoneOffset.UTC
+                        ),
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(tryParseLong(solvedAfter, "solvedAfter")),
+                                ZoneOffset.UTC
+                        ),
+                        pageNo,
+                        pageSize,
+                        sortBy,
+                        SortDirection.of(sortDir));
 
         return ResponseEntity.ok(mapPaged(result));
     }
@@ -224,13 +265,25 @@ public class IssueRequestController {
                         ? NullableBoolean.newBuilder().setData(model.getIsSolved()).build()
                         : NullableBoolean.newBuilder().setNull(NullValue.NULL_VALUE).build())
                 .setCreated(Objects.nonNull(model.getCreated())
-                        ? NullableInt64.newBuilder().setData(model.getCreated()
-                        .toInstant().toEpochMilli()).build()
-                        : NullableInt64.newBuilder().setNull(NullValue.NULL_VALUE).build())
+                        ? NullableInt64.newBuilder()
+                        .setData(model.getCreated()
+                                .atZone(ZoneId.systemDefault())
+                                .toInstant()
+                                .toEpochMilli())
+                        .build()
+                        : NullableInt64.newBuilder()
+                        .setNull(NullValue.NULL_VALUE)
+                        .build())
                 .setSolved(Objects.nonNull(model.getSolved())
-                        ? NullableInt64.newBuilder().setData(model.getSolved()
-                        .toInstant().toEpochMilli()).build()
-                        : NullableInt64.newBuilder().setNull(NullValue.NULL_VALUE).build())
+                        ? NullableInt64.newBuilder()
+                        .setData(model.getSolved()
+                                .atZone(ZoneOffset.UTC)
+                                .toInstant()
+                                .toEpochMilli())
+                        .build()
+                        : NullableInt64.newBuilder()
+                        .setNull(NullValue.NULL_VALUE)
+                        .build())
                 .build();
     }
 }

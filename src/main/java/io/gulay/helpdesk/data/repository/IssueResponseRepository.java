@@ -6,20 +6,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Repository
 public interface IssueResponseRepository extends JpaRepository<IssueResponseModel, Integer> {
     Page<IssueResponseModel> findAllByCreatedBeforeAndCreatedAfter(
-            Date createdBefore, Date createdAfter, Pageable pageable);
+            LocalDateTime createdBefore, LocalDateTime createdAfter, Pageable pageable);
 
     Page<IssueResponseModel> findAllByRequestId(Integer requestId, Pageable pageable);
 
     Page<IssueResponseModel> findAllByRequestIdAndCreatedBeforeAndCreatedAfter(
-            Integer requestId, Date createdBefore, Date createdAfter, Pageable pageable);
+            Integer requestId, LocalDateTime createdBefore, LocalDateTime createdAfter, Pageable pageable);
 
     Page<IssueResponseModel> findAllByRequesterId(Integer requesterId, Pageable pageable);
 
     Page<IssueResponseModel> findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
-            Integer requesterId, Date createdBefore, Date createdAfter, Pageable pageable);
+            Integer requesterId, LocalDateTime createdBefore, LocalDateTime createdAfter, Pageable pageable);
 }

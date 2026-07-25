@@ -8,8 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import org.hibernate.annotations.DynamicInsert;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.persistence.JoinColumn;
 
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +15,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
@@ -38,11 +36,10 @@ public class IssueResponseModel {
     @NotBlank(message = "body must not be blank")
     private String body;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column(insertable = false, updatable = false)
     @PastOrPresent(message = "created must be in the past or present")
-    private Date created;
+    private LocalDateTime created;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id")

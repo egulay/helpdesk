@@ -27,11 +27,36 @@ The project is intentionally hybrid. It is **not a gRPC server**: it does not ex
 
 ## Architecture
 
-```text
-JSON client ───────────────┐
-Protobuf-over-HTTP client ─┼─> Spring MVC controllers ─┐
-MCP client ────────────────┘                           ├─> services ─> JPA repositories ─> MySQL
-AI assistant MCP tools ───────> configured AI client ──┘
+```mermaid
+flowchart LR
+    subgraph Clients
+        JSON[JSON REST Client]
+        PB[Protobuf HTTP Client]
+        MCP[MCP Client]
+    end
+
+    subgraph Application["Spring Boot Application"]
+        MVC[Spring MVC Controllers]
+        MCP_SERVER[MCP Server<br/>Streamable HTTP]
+        SERVICES[Application Services]
+        REPOS[JPA Repositories]
+    end
+
+    subgraph External
+        AI[OpenAI / LM Studio]
+        DB[(MySQL 8)]
+    end
+
+    JSON --> MVC
+    PB --> MVC
+    MCP --> MCP_SERVER
+
+    MVC --> SERVICES
+    MCP_SERVER --> SERVICES
+    SERVICES --> REPOS
+    REPOS --> DB
+
+    MCP_SERVER --> AI
 ```
 
 The main packages are:
@@ -144,7 +169,7 @@ Nullable scalar fields use the wrapper messages in `Common.proto`, so their Prot
 
 List routes accept `pageNo`, `pageSize`, `sortBy`, and `sortDir`. They also support the date filters implemented by each controller. HTTP date query values are Unix epoch milliseconds.
 
-The original `/v1/...` endpoints remain compatibility aliases. Some specialized searches—requester name/email, requests by requester/solved state, and responses by requester/request—currently exist only under those legacy routes. Prefer `/api/v1` for new integrations and consult the generated OpenAPI document for the complete legacy route list.
+Some specialized searches—requester name/email, requests by requester/solved state, and responses by requester/request—are available under `/api/v1`; consult the generated OpenAPI document for the complete route list.
 
 ## Errors
 
@@ -164,10 +189,9 @@ src/main/resources/db/migration/V1__create_helpdesk_schema.sql
 ```
 
 This migration is the single schema source of truth for local development,
-tests, and deployed environments. The project does not execute a separate
-`ddl.sql`: integration tests start an empty MySQL Testcontainer and let Flyway
-apply the same migrations used by the application. Tests create their fixtures
-through the application services.
+tests, and deployed environments. Integration tests start an empty MySQL
+Testcontainer and let Flyway apply the same migrations used by the
+application. Tests create their fixtures through the application services.
 
 The initial migration defines foreign keys, a unique requester email constraint,
 and query-oriented indexes. Add new versioned migrations instead of modifying a
@@ -269,8 +293,7 @@ The easiest local setup is:
 uses Flyway inside Testcontainers. `run.sh` verifies the Vault container and
 secret, optionally patches the OpenAI key, and starts Spring Boot with the
 embedded MCP server enabled; application startup then lets Flyway create or
-migrate the local schema. Neither script executes `ddl.sql` or prints secret
-values.
+migrate the local schema. Neither script prints secret values.
 
 To recreate the local MySQL container during setup:
 
@@ -278,8 +301,8 @@ To recreate the local MySQL container during setup:
 RESET_DB=true ./build.sh
 ```
 
-If an older version of the project created helpdesk tables directly without a
-`flyway_schema_history` table, the revised script stops instead of deleting or
+If the local database contains helpdesk tables without a
+`flyway_schema_history` table, `build.sh` stops instead of deleting or
 silently baselining that data. Back up anything required and use the explicit
 `RESET_DB=true` command to recreate the local development database.
 

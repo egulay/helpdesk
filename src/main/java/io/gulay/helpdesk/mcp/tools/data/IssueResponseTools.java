@@ -9,12 +9,14 @@ import io.gulay.helpdesk.data.util.SortDirection;
 import io.gulay.helpdesk.mcp.dto.IssueResponseToolRequest;
 import io.gulay.helpdesk.mcp.dto.IssueResponseToolResponse;
 import io.gulay.helpdesk.mcp.dto.PagedToolResponse;
-import io.gulay.helpdesk.mcp.util.McpDateParser;
+import io.gulay.helpdesk.mcp.util.McpLocalDateTimeParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
+
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -54,8 +56,8 @@ public class IssueResponseTools {
     ) {
         log.info("Calling MCP tool: findIssueResponsesByCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueResponseService.findAllByCreatedBeforeAndCreatedAfter(
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 page,
                 size,
                 sortBy,
@@ -94,8 +96,8 @@ public class IssueResponseTools {
         log.info("Calling MCP tool: findIssueResponsesByRequestIdAndCreatedDateRange >> Request Id: {}, Page: {}, Size: {}", requestId, page, size);
         return toPagedResponse(issueResponseService.findAllByRequestIdAndCreatedBeforeAndCreatedAfter(
                 requestId,
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 page,
                 size,
                 sortBy,
@@ -134,8 +136,8 @@ public class IssueResponseTools {
         log.info("Calling MCP tool: findIssueResponsesByRequesterIdAndCreatedDateRange >> Requester Id: {}, Page: {}, Size: {}", requesterId, page, size);
         return toPagedResponse(issueResponseService.findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
                 requesterId,
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 page,
                 size,
                 sortBy,
@@ -167,7 +169,12 @@ public class IssueResponseTools {
                 model.getRequest().getId(),
                 model.getRequester().getId(),
                 model.getBody(),
-                model.getCreated() == null ? null : model.getCreated().toInstant().toString()
+                model.getCreated() == null
+                        ? null
+                        : model.getCreated()
+                        .atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .toString()
         );
     }
 

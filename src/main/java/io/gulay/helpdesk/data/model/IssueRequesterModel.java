@@ -2,24 +2,18 @@ package io.gulay.helpdesk.data.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.ColumnDefault;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Objects;
-
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 @Getter
 @Setter
@@ -50,10 +44,10 @@ public class IssueRequesterModel {
     @NotNull(message = "isActive must not be null")
     private Boolean isActive;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column(insertable = false, updatable = false)
-    private Date created;
+    @PastOrPresent(message = "created must be in the past or present")
+    private LocalDateTime created;
 
     @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonManagedReference

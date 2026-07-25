@@ -10,8 +10,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.ColumnDefault;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.persistence.JoinColumn;
 
 import jakarta.validation.constraints.NotBlank;
@@ -19,8 +17,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
 
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Objects;
 
 @Getter
@@ -46,15 +44,13 @@ public class IssueRequestModel {
     @NotNull(message = "isSolved must not be null")
     private Boolean isSolved;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column(insertable = false, updatable = false)
     @PastOrPresent(message = "created must be in the past or present")
-    private Date created;
+    private LocalDateTime created;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @PastOrPresent(message = "solved must be in the past or present")
-    private Date solved;
+    private LocalDateTime solved;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id")

@@ -21,7 +21,8 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Service
 @Transactional(readOnly = true)
@@ -90,7 +91,7 @@ public class IssueRequesterService {
     }
 
     public GenericPagedModel<IssueRequesterModel> findAllByFullNameContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
-            String fullName, Date createdBefore, Date createdAfter, int page, int size, String sortBy,
+            String fullName, LocalDateTime createdBefore, LocalDateTime createdAfter, int page, int size, String sortBy,
             SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
@@ -104,9 +105,13 @@ public class IssueRequesterService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "fullName:".concat(fullName)
                                 .concat(",createdBefore:")
-                                .concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
+                                .concat(String.valueOf(createdBefore.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli()))
                                 .concat(",createdAfter:")
-                                .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
+                                .concat(String.valueOf(createdAfter.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli())));
             }
 
             return GenericPagedModel.<IssueRequesterModel>builder()
@@ -147,7 +152,7 @@ public class IssueRequesterService {
     }
 
     public GenericPagedModel<IssueRequesterModel> findAllByEmailContainingIgnoreCaseAndCreatedBeforeAndCreatedAfter(
-            String email, Date createdBefore, Date createdAfter, int page, int size, String sortBy,
+            String email, LocalDateTime createdBefore, LocalDateTime createdAfter, int page, int size, String sortBy,
             SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
@@ -161,9 +166,13 @@ public class IssueRequesterService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "email:".concat(email)
                                 .concat(",createdBefore:")
-                                .concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
+                                .concat(String.valueOf(createdBefore.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli()))
                                 .concat(",createdAfter:")
-                                .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
+                                .concat(String.valueOf(createdAfter.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli())));
             }
 
             return GenericPagedModel.<IssueRequesterModel>builder()
@@ -179,7 +188,7 @@ public class IssueRequesterService {
     }
 
     public GenericPagedModel<IssueRequesterModel> findAllByCreatedBeforeAndCreatedAfterAndIsActive(
-            Date createdBefore, Date createdAfter, boolean isActive, int page, int size, String sortBy,
+            LocalDateTime createdBefore, LocalDateTime createdAfter, boolean isActive, int page, int size, String sortBy,
             SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
@@ -193,9 +202,13 @@ public class IssueRequesterService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "isActive:".concat(String.valueOf(isActive))
                                 .concat(",createdBefore:")
-                                .concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
+                                .concat(String.valueOf(createdBefore.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli()))
                                 .concat(",createdAfter:")
-                                .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
+                                .concat(String.valueOf(createdAfter.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli())));
             }
 
             return GenericPagedModel.<IssueRequesterModel>builder()
@@ -211,7 +224,7 @@ public class IssueRequesterService {
     }
 
     public GenericPagedModel<IssueRequesterModel> findAllByCreatedBeforeAndCreatedAfter(
-            Date createdBefore, Date createdAfter, int page, int size, String sortBy, SortDirection sortDirection) {
+            LocalDateTime createdBefore, LocalDateTime createdAfter, int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val requesters = sortDirection.equals(SortDirection.Ascending)
                     ? issueRequesterRepository.findAllByCreatedBeforeAndCreatedAfter(createdBefore, createdAfter,
@@ -220,9 +233,13 @@ public class IssueRequesterService {
                     PageRequest.of(page, size, Sort.by(sortBy).descending()));
             if (requesters.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "createdBefore:".concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
+                        "createdBefore:".concat(String.valueOf(createdBefore.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli()))
                                 .concat(",createdAfter:")
-                                .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
+                                .concat(String.valueOf(createdAfter.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli())));
             }
 
             return GenericPagedModel.<IssueRequesterModel>builder()

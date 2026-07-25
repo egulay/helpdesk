@@ -21,7 +21,8 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Service
 @Transactional(readOnly = true)
@@ -60,7 +61,7 @@ public class IssueResponseService {
     }
 
     public GenericPagedModel<IssueResponseModel> findAllByCreatedBeforeAndCreatedAfter(
-            Date createdBefore, Date createdAfter, int page, int size, String sortBy, SortDirection sortDirection) {
+            LocalDateTime createdBefore, LocalDateTime createdAfter, int page, int size, String sortBy, SortDirection sortDirection) {
         try {
             val responses = sortDirection.equals(SortDirection.Ascending)
                     ? issueResponseRepository.findAllByCreatedBeforeAndCreatedAfter(createdBefore, createdAfter,
@@ -69,9 +70,13 @@ public class IssueResponseService {
                     PageRequest.of(page, size, Sort.by(sortBy).descending()));
             if (responses.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "createdBefore:".concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
+                        "createdBefore:".concat(String.valueOf(createdBefore.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli()))
                                 .concat(",createdAfter:")
-                                .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
+                                .concat(String.valueOf(createdAfter.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli())));
             }
 
             return GenericPagedModel.<IssueResponseModel>builder()
@@ -112,7 +117,7 @@ public class IssueResponseService {
     }
 
     public GenericPagedModel<IssueResponseModel> findAllByRequestIdAndCreatedBeforeAndCreatedAfter(
-            Integer requestId, Date createdBefore, Date createdAfter, int page, int size, String sortBy,
+            Integer requestId, LocalDateTime createdBefore, LocalDateTime createdAfter, int page, int size, String sortBy,
             SortDirection sortDirection) {
         try {
             val responses = sortDirection.equals(SortDirection.Ascending)
@@ -126,9 +131,13 @@ public class IssueResponseService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "requestId:".concat(requestId.toString())
                                 .concat(",createdBefore:")
-                                .concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
+                                .concat(String.valueOf(createdBefore.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli()))
                                 .concat(",createdAfter:")
-                                .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
+                                .concat(String.valueOf(createdAfter.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli())));
             }
 
             return GenericPagedModel.<IssueResponseModel>builder()
@@ -169,7 +178,7 @@ public class IssueResponseService {
     }
 
     public GenericPagedModel<IssueResponseModel> findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
-            Integer requesterId, Date createdBefore, Date createdAfter, int page, int size, String sortBy,
+            Integer requesterId, LocalDateTime createdBefore, LocalDateTime createdAfter, int page, int size, String sortBy,
             SortDirection sortDirection) {
         try {
             val responses = sortDirection.equals(SortDirection.Ascending)
@@ -183,9 +192,13 @@ public class IssueResponseService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "requesterId:".concat(requesterId.toString())
                                 .concat(",createdBefore:")
-                                .concat(String.valueOf(createdBefore.toInstant().toEpochMilli()))
+                                .concat(String.valueOf(createdBefore.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli()))
                                 .concat(",createdAfter:")
-                                .concat(String.valueOf(createdAfter.toInstant().toEpochMilli())));
+                                .concat(String.valueOf(createdAfter.atZone(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli())));
             }
 
             return GenericPagedModel.<IssueResponseModel>builder()

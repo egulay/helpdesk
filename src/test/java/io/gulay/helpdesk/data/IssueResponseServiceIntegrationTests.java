@@ -11,9 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -180,8 +179,8 @@ public class IssueResponseServiceIntegrationTests extends TestBase {
         insertNewIssueResponse1();
         insertNewIssueResponse2();
 
-        val yesterday = new Date(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli());
-        val tomorrow = new Date(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
+        val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
+        val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
         testCollection(issueResponseService
                 .findAllByCreatedBeforeAndCreatedAfter(tomorrow, yesterday, 0, 10,
@@ -190,8 +189,8 @@ public class IssueResponseServiceIntegrationTests extends TestBase {
 
     @Test(expected = ResponseStatusException.class)
     public void find_all_issue_responses_by_created_before_and_created_after_with_exception_test() {
-        val yesterday = new Date(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli());
-        val tomorrow = new Date(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
+        val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
+        val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
         testCollection(issueResponseService
                 .findAllByCreatedBeforeAndCreatedAfter(tomorrow, yesterday, 0, 10,
@@ -224,8 +223,8 @@ public class IssueResponseServiceIntegrationTests extends TestBase {
         insertNewIssueResponse1();
         insertNewIssueResponse2();
 
-        val yesterday = new Date(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli());
-        val tomorrow = new Date(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
+        val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
+        val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
         testCollection(issueResponseService
                 .findAllByRequestIdAndCreatedBeforeAndCreatedAfter(newIssueRequest.getId(),
@@ -235,8 +234,8 @@ public class IssueResponseServiceIntegrationTests extends TestBase {
 
     @Test(expected = ResponseStatusException.class)
     public void find_all_issue_responses_by_request_id_and_created_before_and_created_after_with_exception_test() {
-        val yesterday = new Date(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli());
-        val tomorrow = new Date(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
+        val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
+        val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
         testCollection(issueResponseService
                 .findAllByRequestIdAndCreatedBeforeAndCreatedAfter(-1,
@@ -270,8 +269,8 @@ public class IssueResponseServiceIntegrationTests extends TestBase {
         insertNewIssueResponse1();
         insertNewIssueResponse2();
 
-        val yesterday = new Date(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli());
-        val tomorrow = new Date(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
+        val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
+        val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
         testCollection(issueResponseService
                 .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(newIssueRequester.getId(),
@@ -281,8 +280,8 @@ public class IssueResponseServiceIntegrationTests extends TestBase {
 
     @Test(expected = ResponseStatusException.class)
     public void find_all_issue_responses_by_requester_id_and_created_before_and_created_after_with_exception_test() {
-        val yesterday = new Date(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli());
-        val tomorrow = new Date(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
+        val yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
+        val tomorrow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
 
         testCollection(issueResponseService
                 .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(-1,

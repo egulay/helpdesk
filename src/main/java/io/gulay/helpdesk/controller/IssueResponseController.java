@@ -20,8 +20,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Objects;
 
 import static io.gulay.helpdesk.controller.util.Parsers.tryParseInteger;
@@ -69,9 +72,19 @@ public class IssueResponseController {
                     .concat(" | Created After: ").concat(createdAfter));
 
             val result = issueResponseService
-                    .findAllByCreatedBeforeAndCreatedAfter(new Date(tryParseLong(createdBefore, "createdBefore")),
-                            new Date(tryParseLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+                    .findAllByCreatedBeforeAndCreatedAfter(
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdBefore, "createdBefore")),
+                                    ZoneOffset.UTC
+                            ),
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdAfter, "createdAfter")),
+                                    ZoneOffset.UTC
+                            ),
+                            pageNo,
+                            pageSize,
+                            sortBy,
+                            SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -101,10 +114,20 @@ public class IssueResponseController {
                     .concat(" | Created After: ").concat(createdAfter));
 
             val result = issueResponseService
-                    .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(tryParseInteger(requesterId, "requesterId"),
-                            new Date(tryParseLong(createdBefore, "createdBefore")),
-                            new Date(tryParseLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+                    .findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
+                            tryParseInteger(requesterId, "requesterId"),
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdBefore, "createdBefore")),
+                                    ZoneOffset.UTC
+                            ),
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdAfter, "createdAfter")),
+                                    ZoneOffset.UTC
+                            ),
+                            pageNo,
+                            pageSize,
+                            sortBy,
+                            SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -135,10 +158,20 @@ public class IssueResponseController {
                     .concat(" | Created After: ").concat(createdAfter));
 
             val result = issueResponseService
-                    .findAllByRequestIdAndCreatedBeforeAndCreatedAfter(tryParseInteger(requestId, "requestId"),
-                            new Date(tryParseLong(createdBefore, "createdBefore")),
-                            new Date(tryParseLong(createdAfter, "createdAfter")),
-                            pageNo, pageSize, sortBy, SortDirection.of(sortDir));
+                    .findAllByRequestIdAndCreatedBeforeAndCreatedAfter(
+                            tryParseInteger(requestId, "requestId"),
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdBefore, "createdBefore")),
+                                    ZoneOffset.UTC
+                            ),
+                            LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(tryParseLong(createdAfter, "createdAfter")),
+                                    ZoneOffset.UTC
+                            ),
+                            pageNo,
+                            pageSize,
+                            sortBy,
+                            SortDirection.of(sortDir));
 
             return ResponseEntity.ok(mapPaged(result));
         }
@@ -218,9 +251,15 @@ public class IssueResponseController {
                 .setRequestId(model.getRequest().getId())
                 .setBody(model.getBody())
                 .setCreated(Objects.nonNull(model.getCreated())
-                        ? NullableInt64.newBuilder().setData(model.getCreated()
-                        .toInstant().toEpochMilli()).build()
-                        : NullableInt64.newBuilder().setNull(NullValue.NULL_VALUE).build())
+                        ? NullableInt64.newBuilder()
+                        .setData(model.getCreated()
+                                .atZone(ZoneId.systemDefault())
+                                .toInstant()
+                                .toEpochMilli())
+                        .build()
+                        : NullableInt64.newBuilder()
+                        .setNull(NullValue.NULL_VALUE)
+                        .build())
                 .build();
     }
 }

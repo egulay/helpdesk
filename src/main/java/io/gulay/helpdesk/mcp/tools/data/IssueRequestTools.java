@@ -8,12 +8,16 @@ import io.gulay.helpdesk.data.util.SortDirection;
 import io.gulay.helpdesk.mcp.dto.IssueRequestToolRequest;
 import io.gulay.helpdesk.mcp.dto.IssueRequestToolResponse;
 import io.gulay.helpdesk.mcp.dto.PagedToolResponse;
-import io.gulay.helpdesk.mcp.util.McpDateParser;
+import io.gulay.helpdesk.mcp.util.McpLocalDateTimeParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -58,8 +62,8 @@ public class IssueRequestTools {
     ) {
         log.info("Calling MCP tool: findIssueRequestsByCreatedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequestService.findAllByCreatedBeforeAndCreatedAfter(
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 page,
                 size,
                 sortBy,
@@ -79,8 +83,8 @@ public class IssueRequestTools {
     ) {
         log.info("Calling MCP tool: findIssueRequestsByCreatedDateRangeAndSolvedStatus >> Solved: {}, Page: {}, Size: {}", isSolved, page, size);
         return toPagedResponse(issueRequestService.findAllByCreatedBeforeAndCreatedAfterAndIsSolved(
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 isSolved,
                 page,
                 size,
@@ -100,8 +104,8 @@ public class IssueRequestTools {
     ) {
         log.info("Calling MCP tool: findIssueRequestsBySolvedDateRange >> Page: {}, Size: {}", page, size);
         return toPagedResponse(issueRequestService.findAllBySolvedBeforeAndSolvedAfter(
-                McpDateParser.fromIsoInstant(solvedBefore),
-                McpDateParser.fromIsoInstant(solvedAfter),
+                McpLocalDateTimeParser.fromIsoInstant(solvedBefore),
+                McpLocalDateTimeParser.fromIsoInstant(solvedAfter),
                 page,
                 size,
                 sortBy,
@@ -140,8 +144,8 @@ public class IssueRequestTools {
         log.info("Calling MCP tool: findIssueRequestsByRequesterIdAndCreatedDateRange >> Requester Id: {}, Page: {}, Size: {}", requesterId, page, size);
         return toPagedResponse(issueRequestService.findAllByRequesterIdAndCreatedBeforeAndCreatedAfter(
                 requesterId,
-                McpDateParser.fromIsoInstant(createdBefore),
-                McpDateParser.fromIsoInstant(createdAfter),
+                McpLocalDateTimeParser.fromIsoInstant(createdBefore),
+                McpLocalDateTimeParser.fromIsoInstant(createdAfter),
                 page,
                 size,
                 sortBy,
@@ -174,7 +178,12 @@ public class IssueRequestTools {
                 .requester(issueRequesterService.findById(request.requesterId()))
                 .body(request.requestBody())
                 .isSolved(request.isSolved())
-                .solved(request.solved() == null ? null : McpDateParser.fromIsoInstant(request.solved()))
+                .solved(request.solved() == null
+                        ? null
+                        : LocalDateTime.ofInstant(
+                        Instant.parse(request.solved()),
+                        ZoneOffset.UTC
+                ))
                 .build();
     }
 
@@ -184,8 +193,18 @@ public class IssueRequestTools {
                 model.getRequester().getId(),
                 model.getBody(),
                 model.getIsSolved(),
-                model.getCreated() == null ? null : model.getCreated().toInstant().toString(),
-                model.getSolved() == null ? null : model.getSolved().toInstant().toString()
+                model.getCreated() == null
+                        ? null
+                        : model.getCreated()
+                        .atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .toString(),
+                model.getSolved() == null
+                        ? null
+                        : model.getSolved()
+                        .atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .toString()
         );
     }
 
