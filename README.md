@@ -409,7 +409,6 @@ Disable public API documentation with `HELPDESK_OPENAPI_ENABLED=false`. Expose a
 ![Local MCP Test 2](local-mcp-test.png)
 ![Local MCP Test 3](local-mcp-test-3.png)
 ![Local MCP Test DB](local-mcp-test-db.png)
-![Open API Screen Capture](open-api-sc.JPG)
 
 ## License
 
