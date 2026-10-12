@@ -75,7 +75,7 @@ src/main/resources/db         Flyway migrations
 
 ## Technology
 
-- Java 17
+- Java 21
 - Spring Boot 4.1
 - Spring MVC, Spring Data JPA, Validation, Actuator, and Cache
 - Spring AI MCP Server over WebMVC Streamable HTTP
@@ -89,7 +89,7 @@ src/main/resources/db         Flyway migrations
 
 ## Requirements
 
-- Java 17
+- Java 21
 - Docker Desktop or another Docker-compatible runtime
 - `bash`, `curl`, and `jq` for the helper scripts
 
