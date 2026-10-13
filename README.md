@@ -17,6 +17,11 @@
 
 # Dummy Helpdesk API
 
+[![Java](https://img.shields.io/badge/Java-21-f89820.svg)](https://openjdk.org/projects/jdk/21/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6db33f.svg)](https://spring.io/projects/spring-boot)
+[![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-5a4fcf.svg)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Helpdesk is a template Spring Boot application that exposes one service and persistence layer through three interfaces:
 
 - a resource-oriented HTTP API using JSON;
@@ -84,7 +89,7 @@ src/main/resources/db         Flyway migrations
 - OpenAI Java SDK, with OpenAI-compatible LM Studio support
 - Spring Cloud Vault
 - Maven Wrapper, Maven Enforcer, and JaCoCo
-- JUnit 4/Vintage integration tests on the JUnit Platform
+- JUnit 5 (Jupiter) integration tests on the JUnit Platform
 - Testcontainers with MySQL 8
 
 ## Requirements
@@ -355,7 +360,7 @@ The build also:
 - builds the executable Spring Boot JAR;
 - writes a JaCoCo HTML report to `target/site/jacoco/index.html`.
 
-The last verified suite contains 141 tests.
+The last verified suite contains 138 tests.
 
 ## Test the MCP transport
 
@@ -412,4 +417,4 @@ Disable public API documentation with `HELPDESK_OPENAPI_ENABLED=false`. Expose a
 
 ## License
 
-MIT License. Copyright © 2025.
+Released under the [MIT License](LICENSE). Copyright © 2025 Emre Gülay.
