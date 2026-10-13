@@ -359,7 +359,20 @@ Run the complete verification pipeline with:
 ./mvnw verify
 ```
 
-The current suite uses the existing shared `TestBase`, starts PostgreSQL 18 through Testcontainers, lets Flyway create the schema, and runs controller, service, and MCP-configuration integration tests. Controller coverage verifies JSON responses, binary Protobuf responses, JSON writes, and binary typed errors for all three resources.
+The suite has two tiers:
+
+- **Integration tests** extend the shared `TestBase`, which starts PostgreSQL 18 through
+  Testcontainers and lets Flyway create the schema. They cover the controllers (JSON
+  responses, binary Protobuf responses, JSON writes, and binary typed errors for all three
+  resources), the transactional services, the MCP data and mutation tools, the MCP transport
+  handshake, and the AI assistant chain through a recording stub provider.
+- **Unit tests** need no container and run in milliseconds. They cover the query parsers,
+  sort-direction aliases, persistence-exception mapping, entity identity semantics, the
+  prompt builders, the ISO-8601 MCP date parser, the Protobuf JSON serializer, the error
+  handler's content negotiation, and the OpenAI/LM Studio client wiring.
+
+MCP mutation tools are registered only when `helpdesk.mcp.allow-mutations=true`, so the
+mutation tests opt in with `@TestPropertySource`.
 
 The build also:
 
@@ -368,7 +381,9 @@ The build also:
 - builds the executable Spring Boot JAR;
 - writes a JaCoCo HTML report to `target/site/jacoco/index.html`.
 
-The last verified suite contains 138 tests.
+The last verified suite contains 314 tests. JaCoCo reports 95% instruction and 89% branch
+coverage of project code; the generated `protoGen` sources are excluded from the report
+because `protoc` produces them from `src/main/proto`.
 
 ## Test the MCP transport
 

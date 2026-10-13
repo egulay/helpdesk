@@ -748,4 +748,136 @@ public class IssueResponseControllerIntegrationTests extends TestBase {
             assertThat(body).contains(String.valueOf(id));
         }
     }
+
+    @Test
+    public void get_all_issue_responses_without_date_filters_test() {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+        insertNewIssueResponse2();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/api/v1/issue-responses");
+
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
+
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+
+        testPagedDataResponse(response.getBody());
+    }
+
+    @Test
+    public void get_all_issue_responses_without_date_filters_with_exception_test() {
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/api/v1/issue-responses");
+
+        val thrown = assertThrows(WebClientResponseException.class, () -> webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block());
+
+        assertEquals(HttpStatus.NOT_FOUND, thrown.getStatusCode());
+    }
+
+    @Test
+    public void get_all_issue_responses_without_date_filters_sorted_ascending_test() {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+        insertNewIssueResponse2();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/api/v1/issue-responses")
+                .concat("?sortBy=id&sortDir=asc");
+
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
+
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().getNumberOfElements());
+        assertEquals(
+                newIssueResponse1.getId().intValue(),
+                response.getBody().getIssueResponses().getIssueResponsesList().getFirst().getId()
+        );
+    }
+
+    @Test
+    public void get_all_issue_responses_by_requester_id_without_date_filters_test() {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+        insertNewIssueResponse2();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_responses/find_all_by_requester/")
+                .concat(newIssueRequester.getId().toString());
+
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
+
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+
+        testPagedDataResponse(response.getBody());
+    }
+
+    @Test
+    public void get_all_issue_responses_by_request_id_without_date_filters_test() {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+        insertNewIssueResponse2();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_responses/find_all_by_request/")
+                .concat(newIssueRequest.getId().toString());
+
+        val response = webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block();
+
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+
+        testPagedDataResponse(response.getBody());
+    }
+
+    @Test
+    public void get_all_issue_responses_by_unparsable_requester_id_test() {
+        insertNewIssueRequester();
+        insertNewIssueRequest();
+        insertNewIssueResponse1();
+
+        val url = RestConfiguration.LOCALHOST
+                .concat(String.valueOf(port))
+                .concat("/v1/issue_responses/find_all_by_requester/not-a-number");
+
+        val thrown = assertThrows(WebClientResponseException.class, () -> webClient.get()
+                .uri(toRelative(url))
+                .retrieve()
+                .toEntity(PagedData.class)
+                .block());
+
+        assertEquals(HttpStatus.NOT_ACCEPTABLE, thrown.getStatusCode());
+    }
 }
