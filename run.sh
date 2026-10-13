@@ -9,6 +9,10 @@ SECRET_PATH=${SECRET_PATH:-secret/helpdesk}
 export VAULT_ADDR=${VAULT_ADDR:-http://127.0.0.1:${VAULT_PORT}}
 export VAULT_TOKEN
 
+# The PostgreSQL driver forwards the JVM default zone to the server as the session
+# TimeZone, and PostgreSQL rejects deprecated tzdata aliases such as "Turkey".
+export TZ=${TZ:-UTC}
+
 printf '%s\n' \
   '══════════════════════════════════════════════' \
   '🚀 Helpdesk Application Launcher' \

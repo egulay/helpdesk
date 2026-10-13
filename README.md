@@ -49,7 +49,7 @@ flowchart LR
 
     subgraph External
         AI[OpenAI / LM Studio]
-        DB[(MySQL 8)]
+        DB[(PostgreSQL 18)]
     end
 
     JSON --> MVC
@@ -84,13 +84,13 @@ src/main/resources/db         Flyway migrations
 - Spring Boot 4.1
 - Spring MVC, Spring Data JPA, Validation, Actuator, and Cache
 - Spring AI MCP Server over WebMVC Streamable HTTP
-- MySQL 8, Hibernate, and Flyway
+- PostgreSQL 18, Hibernate, and Flyway
 - Google Protocol Buffers
 - OpenAI Java SDK, with OpenAI-compatible LM Studio support
 - Spring Cloud Vault
 - Maven Wrapper, Maven Enforcer, and JaCoCo
 - JUnit 5 (Jupiter) integration tests on the JUnit Platform
-- Testcontainers with MySQL 8
+- Testcontainers with PostgreSQL 18
 
 ## Requirements
 
@@ -194,9 +194,18 @@ src/main/resources/db/migration/V1__create_helpdesk_schema.sql
 ```
 
 This migration is the single schema source of truth for local development,
-tests, and deployed environments. Integration tests start an empty MySQL
+tests, and deployed environments. Integration tests start an empty PostgreSQL
 Testcontainer and let Flyway apply the same migrations used by the
 application. Tests create their fixtures through the application services.
+
+The entities map to the `help_desk` schema. A PostgreSQL schema is not a
+database, so `spring.flyway.schemas=help_desk` makes Flyway create that schema
+and apply the migrations inside it; the Flyway history table lives there too.
+
+The PostgreSQL driver forwards the JVM default time zone to the server as the
+session `TimeZone`, and PostgreSQL rejects deprecated tzdata aliases such as
+`Turkey`. The test JVM and `run.sh` therefore default to UTC, which also keeps
+stored timestamps aligned with the database container.
 
 The initial migration defines foreign keys, a unique requester email constraint,
 and query-oriented indexes. Add new versioned migrations instead of modifying a
@@ -288,8 +297,8 @@ The easiest local setup is:
 
 `build.sh`:
 
-1. starts or reuses MySQL 8;
-2. verifies that the configured database is reachable and repairs the local application user/grants when root access is available;
+1. starts or reuses PostgreSQL 18;
+2. verifies that the configured database is reachable and repairs the local application role, database, and privileges when an administrative role is reachable;
 3. starts or reuses Vault in development mode;
 4. creates datasource secrets and optionally stores `OPENAI_API_KEY`;
 5. runs `./mvnw clean verify`.
@@ -300,31 +309,30 @@ secret, optionally patches the OpenAI key, and starts Spring Boot with the
 embedded MCP server enabled; application startup then lets Flyway create or
 migrate the local schema. Neither script prints secret values.
 
-To recreate the local MySQL container during setup:
+To recreate the local PostgreSQL container during setup:
 
 ```bash
 RESET_DB=true ./build.sh
 ```
 
-If the local database contains helpdesk tables without a
+If the `help_desk` schema contains helpdesk tables without a
 `flyway_schema_history` table, `build.sh` stops instead of deleting or
 silently baselining that data. Back up anything required and use the explicit
 `RESET_DB=true` command to recreate the local development database.
 
-The scripts support overrides such as `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, `VAULT_PORT`, `VAULT_CONTAINER`, `SECRET_PATH`, and the corresponding container/image variables.
+The scripts support overrides such as `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_SCHEMA`, `VAULT_PORT`, `VAULT_CONTAINER`, `SECRET_PATH`, and the corresponding container/image variables.
 
 ## Manual local infrastructure
 
-If you do not use `build.sh`, start MySQL and Vault yourself:
+If you do not use `build.sh`, start PostgreSQL and Vault yourself:
 
 ```bash
-docker run -d --name mysql8 \
-  -p 3306:3306 \
-  -e MYSQL_DATABASE=help_desk \
-  -e MYSQL_USER=help_user \
-  -e MYSQL_PASSWORD=help_pass \
-  -e MYSQL_ROOT_PASSWORD=root_pass \
-  mysql:8.0
+docker run -d --name postgres18 \
+  -p 5432:5432 \
+  -e POSTGRES_DB=help_desk \
+  -e POSTGRES_USER=help_user \
+  -e POSTGRES_PASSWORD=help_pass \
+  postgres:18
 
 docker run -d --name vault \
   -p 8200:8200 \
@@ -351,7 +359,7 @@ Run the complete verification pipeline with:
 ./mvnw verify
 ```
 
-The current suite uses the existing shared `TestBase`, starts MySQL 8 through Testcontainers, lets Flyway create the schema, and runs controller, service, and MCP-configuration integration tests. Controller coverage verifies JSON responses, binary Protobuf responses, JSON writes, and binary typed errors for all three resources.
+The current suite uses the existing shared `TestBase`, starts PostgreSQL 18 through Testcontainers, lets Flyway create the schema, and runs controller, service, and MCP-configuration integration tests. Controller coverage verifies JSON responses, binary Protobuf responses, JSON writes, and binary typed errors for all three resources.
 
 The build also:
 

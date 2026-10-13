@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MYSQL_IMAGE=${MYSQL_IMAGE:-mysql:8.0}
-MYSQL_CONTAINER=${MYSQL_CONTAINER:-mysql8}
-MYSQL_PORT=${MYSQL_PORT:-3306}
-MYSQL_DATABASE=${MYSQL_DATABASE:-help_desk}
-MYSQL_USER=${MYSQL_USER:-help_user}
-MYSQL_PASSWORD=${MYSQL_PASSWORD:-help_pass}
-MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_pass}
+POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:18}
+POSTGRES_CONTAINER=${POSTGRES_CONTAINER:-postgres18}
+POSTGRES_PORT=${POSTGRES_PORT:-5432}
+POSTGRES_DB=${POSTGRES_DB:-help_desk}
+POSTGRES_USER=${POSTGRES_USER:-help_user}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-help_pass}
+POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-help_desk}
 
 VAULT_IMAGE=${VAULT_IMAGE:-hashicorp/vault:latest}
 VAULT_CONTAINER=${VAULT_CONTAINER:-vault}
@@ -26,18 +26,17 @@ container_is_running() {
   [[ "$(docker inspect -f '{{.State.Running}}' "$1" 2>/dev/null || true)" == "true" ]]
 }
 
-wait_for_mysql() {
-  printf '⏳ Waiting for MySQL initialization to complete'
+wait_for_postgres() {
+  printf '⏳ Waiting for PostgreSQL initialization to complete'
   for _ in {1..90}; do
-    if docker exec -e MYSQL_PWD="${MYSQL_ROOT_PASSWORD}" "${MYSQL_CONTAINER}" \
-      mysql -uroot -Nse 'SELECT 1' >/dev/null 2>&1; then
+    if docker exec "${POSTGRES_CONTAINER}" pg_isready -q -d "${POSTGRES_DB}" >/dev/null 2>&1; then
       printf ' - ✅ ready\n'
       return
     fi
     printf '.'
     sleep 1
   done
-  printf '\n❌ MySQL initialization did not complete in time or the configured root password is incorrect.\n' >&2
+  printf '\n❌ PostgreSQL initialization did not complete in time.\n' >&2
   exit 1
 }
 
@@ -55,6 +54,52 @@ wait_for_vault() {
   exit 1
 }
 
+# Connections to 127.0.0.1 inside the container match a "trust" rule in pg_hba.conf
+# and never verify the password. The application reaches PostgreSQL through the
+# published port, which arrives from the bridge network and matches the
+# scram-sha-256 rule, so these checks use the container address instead.
+container_address() {
+  docker exec "${POSTGRES_CONTAINER}" hostname -i | awk '{print $1}'
+}
+
+app_user_can_connect() {
+  docker exec -e PGPASSWORD="${POSTGRES_PASSWORD}" "${POSTGRES_CONTAINER}" \
+    psql -h "${POSTGRES_ADDRESS}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
+    -tAc 'SELECT 1' >/dev/null 2>&1
+}
+
+psql_app() {
+  docker exec -e PGPASSWORD="${POSTGRES_PASSWORD}" "${POSTGRES_CONTAINER}" \
+    psql -h "${POSTGRES_ADDRESS}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -tAc "$1"
+}
+
+# Local socket connections inside the official image use trust authentication, so an
+# administrative role is reachable even when the stored password no longer matches.
+# The superuser the data directory was initialised with, which is the only
+# administrative role that exists when POSTGRES_USER was changed afterwards.
+initial_superuser() {
+  docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${POSTGRES_CONTAINER}" 2>/dev/null \
+    | sed -n 's/^POSTGRES_USER=//p' | head -1
+}
+
+socket_admin_role() {
+  local role
+  for role in "${POSTGRES_USER}" "$(initial_superuser)" postgres; do
+    [[ -n "${role}" ]] || continue
+    if docker exec -u postgres "${POSTGRES_CONTAINER}" \
+      psql -U "${role}" -d postgres -tAc 'SELECT 1' >/dev/null 2>&1; then
+      printf '%s' "${role}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+psql_admin() {
+  docker exec -u postgres "${POSTGRES_CONTAINER}" \
+    psql -v ON_ERROR_STOP=1 -U "${ADMIN_ROLE}" -d "$1" -tAc "$2"
+}
+
 printf '%s\n' \
   '══════════════════════════════════════════════' \
   '🚀 Helpdesk Build & Environment Setup' \
@@ -65,89 +110,116 @@ command -v docker >/dev/null 2>&1 || {
   exit 1
 }
 
-if [[ ! "${MYSQL_PORT}" =~ ^[0-9]+$ || ! "${VAULT_PORT}" =~ ^[0-9]+$ ]]; then
-  printf '❌ MYSQL_PORT and VAULT_PORT must be numeric.\n' >&2
+if [[ ! "${POSTGRES_PORT}" =~ ^[0-9]+$ || ! "${VAULT_PORT}" =~ ^[0-9]+$ ]]; then
+  printf '❌ POSTGRES_PORT and VAULT_PORT must be numeric.\n' >&2
   exit 1
 fi
 
-if [[ ! "${MYSQL_DATABASE}" =~ ^[A-Za-z0-9_]+$ ]]; then
-  printf '❌ MYSQL_DATABASE may contain only letters, numbers, and underscores.\n' >&2
+if [[ ! "${POSTGRES_DB}" =~ ^[A-Za-z0-9_]+$ ]]; then
+  printf '❌ POSTGRES_DB may contain only letters, numbers, and underscores.\n' >&2
   exit 1
 fi
 
-if [[ ! "${MYSQL_USER}" =~ ^[A-Za-z0-9_]+$ ]]; then
-  printf '❌ MYSQL_USER may contain only letters, numbers, and underscores.\n' >&2
+if [[ ! "${POSTGRES_USER}" =~ ^[A-Za-z0-9_]+$ ]]; then
+  printf '❌ POSTGRES_USER may contain only letters, numbers, and underscores.\n' >&2
   exit 1
 fi
 
-if [[ "${RESET_DB:-false}" == "true" ]] && container_exists "${MYSQL_CONTAINER}"; then
-  printf '🧹 RESET_DB=true: removing MySQL container and its anonymous volumes (%s)\n' "${MYSQL_CONTAINER}"
-  docker rm -fv "${MYSQL_CONTAINER}" >/dev/null
+if [[ ! "${POSTGRES_SCHEMA}" =~ ^[A-Za-z0-9_]+$ ]]; then
+  printf '❌ POSTGRES_SCHEMA may contain only letters, numbers, and underscores.\n' >&2
+  exit 1
 fi
 
-if ! container_exists "${MYSQL_CONTAINER}"; then
-  printf '📦 Pulling %s...\n' "${MYSQL_IMAGE}"
-  docker pull "${MYSQL_IMAGE}"
+if [[ "${RESET_DB:-false}" == "true" ]] && container_exists "${POSTGRES_CONTAINER}"; then
+  printf '🧹 RESET_DB=true: removing PostgreSQL container and its anonymous volumes (%s)\n' "${POSTGRES_CONTAINER}"
+  docker rm -fv "${POSTGRES_CONTAINER}" >/dev/null
+fi
 
-  printf '🐬 Starting MySQL container: %s\n' "${MYSQL_CONTAINER}"
-  docker run -d --name "${MYSQL_CONTAINER}" \
-    -p "${MYSQL_PORT}:3306" \
-    -e MYSQL_DATABASE="${MYSQL_DATABASE}" \
-    -e MYSQL_USER="${MYSQL_USER}" \
-    -e MYSQL_PASSWORD="${MYSQL_PASSWORD}" \
-    -e MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}" \
-    "${MYSQL_IMAGE}" >/dev/null
-elif ! container_is_running "${MYSQL_CONTAINER}"; then
-  printf '▶️ Starting existing MySQL container: %s\n' "${MYSQL_CONTAINER}"
-  docker start "${MYSQL_CONTAINER}" >/dev/null
+if ! container_exists "${POSTGRES_CONTAINER}"; then
+  printf '📦 Pulling %s...\n' "${POSTGRES_IMAGE}"
+  docker pull "${POSTGRES_IMAGE}"
+
+  printf '🐘 Starting PostgreSQL container: %s\n' "${POSTGRES_CONTAINER}"
+  docker run -d --name "${POSTGRES_CONTAINER}" \
+    -p "${POSTGRES_PORT}:5432" \
+    -e POSTGRES_DB="${POSTGRES_DB}" \
+    -e POSTGRES_USER="${POSTGRES_USER}" \
+    -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+    "${POSTGRES_IMAGE}" >/dev/null
+elif ! container_is_running "${POSTGRES_CONTAINER}"; then
+  printf '▶️ Starting existing PostgreSQL container: %s\n' "${POSTGRES_CONTAINER}"
+  docker start "${POSTGRES_CONTAINER}" >/dev/null
 else
-  printf '✅ MySQL container %s is already running.\n' "${MYSQL_CONTAINER}"
+  printf '✅ PostgreSQL container %s is already running.\n' "${POSTGRES_CONTAINER}"
 fi
 
-wait_for_mysql
+wait_for_postgres
 
-if ! docker exec -e MYSQL_PWD="${MYSQL_PASSWORD}" "${MYSQL_CONTAINER}" \
-  mysql -u"${MYSQL_USER}" -D"${MYSQL_DATABASE}" -e 'SELECT 1' >/dev/null 2>&1; then
-  printf '⚠️ Cannot connect to %s as %s; repairing the local application user and grants...\n' \
-    "${MYSQL_DATABASE}" "${MYSQL_USER}"
+POSTGRES_ADDRESS=$(container_address)
+if [[ -z "${POSTGRES_ADDRESS}" ]]; then
+  printf '❌ Could not determine the address of container %s.\n' "${POSTGRES_CONTAINER}" >&2
+  exit 1
+fi
 
-  MYSQL_PASSWORD_SQL=${MYSQL_PASSWORD//\'/\'\'}
-  docker exec -e MYSQL_PWD="${MYSQL_ROOT_PASSWORD}" "${MYSQL_CONTAINER}" \
-    mysql -uroot -e \
-    "CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-     CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD_SQL}';
-     ALTER USER '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD_SQL}';
-     GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
-     FLUSH PRIVILEGES;" >/dev/null
+if ! app_user_can_connect; then
+  printf '⚠️ Cannot connect to %s as %s; repairing the local application role and database...\n' \
+    "${POSTGRES_DB}" "${POSTGRES_USER}"
 
-  if ! docker exec -e MYSQL_PWD="${MYSQL_PASSWORD}" "${MYSQL_CONTAINER}" \
-    mysql -u"${MYSQL_USER}" -D"${MYSQL_DATABASE}" -e 'SELECT 1' >/dev/null 2>&1; then
+  if ! ADMIN_ROLE=$(socket_admin_role); then
     printf '%s\n' \
-      "❌ Could not repair access to ${MYSQL_DATABASE} for ${MYSQL_USER}." \
-      'Check MYSQL_ROOT_PASSWORD or run RESET_DB=true ./build.sh for a disposable local database.' >&2
+      "❌ No administrative role is reachable inside ${POSTGRES_CONTAINER}." \
+      'Run RESET_DB=true ./build.sh for a disposable local database.' >&2
     exit 1
   fi
 
-  printf '✅ Application user and grants repaired.\n'
+  POSTGRES_PASSWORD_SQL=${POSTGRES_PASSWORD//\'/\'\'}
+
+  if [[ "$(psql_admin postgres "SELECT 1 FROM pg_roles WHERE rolname = '${POSTGRES_USER}'")" == "1" ]]; then
+    psql_admin postgres \
+      "ALTER ROLE \"${POSTGRES_USER}\" WITH LOGIN PASSWORD '${POSTGRES_PASSWORD_SQL}'" >/dev/null
+  else
+    psql_admin postgres \
+      "CREATE ROLE \"${POSTGRES_USER}\" WITH LOGIN PASSWORD '${POSTGRES_PASSWORD_SQL}'" >/dev/null
+  fi
+
+  if [[ "$(psql_admin postgres "SELECT 1 FROM pg_database WHERE datname = '${POSTGRES_DB}'")" != "1" ]]; then
+    docker exec -u postgres "${POSTGRES_CONTAINER}" \
+      createdb -U "${ADMIN_ROLE}" -O "${POSTGRES_USER}" "${POSTGRES_DB}" >/dev/null
+  fi
+
+  # Flyway creates the help_desk schema itself, so the role only needs CREATE on the database.
+  psql_admin postgres \
+    "GRANT ALL ON DATABASE \"${POSTGRES_DB}\" TO \"${POSTGRES_USER}\"" >/dev/null
+
+  if ! app_user_can_connect; then
+    printf '%s\n' \
+      "❌ Could not repair access to ${POSTGRES_DB} for ${POSTGRES_USER}." \
+      'Run RESET_DB=true ./build.sh for a disposable local database.' >&2
+    exit 1
+  fi
+
+  printf '✅ Application role and database repaired.\n'
 fi
 
-APP_TABLE_COUNT=$(docker exec -e MYSQL_PWD="${MYSQL_PASSWORD}" "${MYSQL_CONTAINER}" \
-  mysql -u"${MYSQL_USER}" -Nse \
-  "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${MYSQL_DATABASE}' AND table_name IN ('issue_requester','issue_request','issue_response')")
+APP_TABLE_COUNT=$(psql_app \
+  "SELECT COUNT(*) FROM information_schema.tables
+   WHERE table_schema = '${POSTGRES_SCHEMA}'
+     AND table_name IN ('issue_requester', 'issue_request', 'issue_response')")
 
-FLYWAY_TABLE_COUNT=$(docker exec -e MYSQL_PWD="${MYSQL_PASSWORD}" "${MYSQL_CONTAINER}" \
-  mysql -u"${MYSQL_USER}" -Nse \
-  "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${MYSQL_DATABASE}' AND table_name='flyway_schema_history'")
+FLYWAY_TABLE_COUNT=$(psql_app \
+  "SELECT COUNT(*) FROM information_schema.tables
+   WHERE table_schema = '${POSTGRES_SCHEMA}'
+     AND table_name = 'flyway_schema_history'")
 
 if (( APP_TABLE_COUNT > 0 && FLYWAY_TABLE_COUNT == 0 )); then
   printf '%s\n' \
     '❌ Legacy helpdesk tables exist without Flyway schema history.' \
-    'The previous build script created these tables directly, so V1 cannot be applied safely.' \
+    'V1 cannot be applied safely on top of a schema Flyway does not know about.' \
     'Back up any required data, then run RESET_DB=true ./build.sh to create a Flyway-managed database.' >&2
   exit 1
 fi
 
-printf '✅ Database is reachable. Flyway will create or migrate the application schema at startup.\n'
+printf '✅ Database is reachable. Flyway will create or migrate the %s schema at startup.\n' "${POSTGRES_SCHEMA}"
 
 if ! container_exists "${VAULT_CONTAINER}"; then
   printf '📦 Pulling %s...\n' "${VAULT_IMAGE}"
@@ -183,11 +255,11 @@ if "${VAULT_EXEC[@]}" kv get -format=json "${SECRET_PATH}" >/dev/null 2>&1; then
 else
   printf '🔐 Creating Vault datasource secret: %s\n' "${SECRET_PATH}"
   "${VAULT_EXEC[@]}" kv put "${SECRET_PATH}" \
-    spring.datasource.url="jdbc:mysql://127.0.0.1:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" \
-    spring.datasource.username="${MYSQL_USER}" \
-    spring.datasource.password="${MYSQL_PASSWORD}" \
-    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
-    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect \
+    spring.datasource.url="jdbc:postgresql://127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}" \
+    spring.datasource.username="${POSTGRES_USER}" \
+    spring.datasource.password="${POSTGRES_PASSWORD}" \
+    spring.datasource.driver-class-name=org.postgresql.Driver \
+    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect \
     spring.datasource.hikari.auto-commit=false \
     spring.datasource.hikari.transaction-isolation=TRANSACTION_READ_COMMITTED \
     spring.datasource.hikari.minimum-idle=2 \

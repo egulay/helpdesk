@@ -20,6 +20,9 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 0
+    # PostgreSQL schemas are not databases: the entities map to help_desk.*,
+    # so Flyway creates that schema and applies the migrations inside it.
+    schemas: help_desk
   mvc:
     async:
       request-timeout: 300000 # 5 minutes

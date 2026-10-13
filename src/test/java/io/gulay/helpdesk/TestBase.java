@@ -12,7 +12,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 
@@ -24,11 +24,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ActiveProfiles("test")
 @Testcontainers
 public abstract class TestBase {
-    private static final String IMAGE_VERSION = "mysql:8.0";
+    private static final String IMAGE_VERSION = "postgres:18";
 
     @Container
-    private static final MySQLContainer container =
-            new MySQLContainer(IMAGE_VERSION)
+    private static final PostgreSQLContainer container =
+            new PostgreSQLContainer(IMAGE_VERSION)
                     .withUsername("test_user")
                     .withPassword("test_password")
                     .withDatabaseName("help_desk");

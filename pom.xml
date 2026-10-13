@@ -151,8 +151,8 @@
 
         <!-- Database -->
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -161,7 +161,7 @@
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-mysql</artifactId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
         <!-- Lombok -->
@@ -233,7 +233,7 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers-mysql</artifactId>
+            <artifactId>testcontainers-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -268,6 +268,13 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                    <environmentVariables>
+                        <!-- The PostgreSQL driver forwards the JVM default zone to the server as
+                             the session TimeZone, and PostgreSQL rejects deprecated tzdata
+                             aliases such as "Turkey". Running the tests in UTC keeps the
+                             forked JVM, the container, and the stored timestamps aligned. -->
+                        <TZ>UTC</TZ>
+                    </environmentVariables>
                 </configuration>
             </plugin>
 
